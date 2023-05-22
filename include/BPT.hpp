@@ -4,7 +4,7 @@
 #include<fstream>
 #include<cstring>
 #include<vector>
-#define M 2
+#define M 4
 #define CAST(N) reinterpret_cast<char*>(N)
 using std::cin,std::cout,std::endl,std::ios;
 const int MAXSIZE=M,MINSIZE=M/2;
@@ -256,6 +256,21 @@ private:
             return;
         }
     }
+    bool rootadjust(Block& blk,Block& parentblk,bool leftorright){
+        if(parentblk.size==0){
+            //rootleaf
+            if(curlayer==1){
+                blk.nodetype=ROOTLEAF;
+            }else{
+                blk.nodetype=ROOT;
+            }
+            rootpos=parentblk.child[leftorright];
+            writeblk(rootpos,blk);
+            return 1;
+        }else{
+            return 0;
+        }
+    }
     void removeadjust(Block& blk,pos_t pos){
         Block parentblk,neighborblk;
         int index;
@@ -279,8 +294,12 @@ private:
                         blk.data[i]=neighborblk.data[j];
                     }
                     blk.size+=MINSIZE;
+                    blk.nextblock=neighborblk.nextblock;
                     removedata(parentblk,0);
                     removechild(parentblk,1);
+                    if(rootadjust(blk,parentblk,1)){
+                        return;
+                    }
                     writeblk(parentblk.child[0],blk);
                     if(parentblk.size<MINSIZE){
                         removeadjust(parentblk,layer[--curlayer]);
@@ -300,8 +319,26 @@ private:
                         neighborblk.data[i]=blk.data[j];
                     }
                     neighborblk.size+=MINSIZE-1;
+                    neighborblk.nextblock=blk.nextblock;
                     removedata(parentblk,index-1);
                     removechild(parentblk,index);
+                    
+                    //parent is root and has no child at all,height-1
+                    if(rootadjust(neighborblk,parentblk,0)){
+                        return;
+                    }
+                    // if(parentblk.size==0){
+                    //     //rootleaf
+                    //     if(curlayer==1){
+                    //         neighborblk.nodetype=ROOTLEAF;
+                    //     }else{
+                    //         neighborblk.nodetype=ROOT;
+                    //     }
+                    //     rootpos=parentblk.child[0];
+                    //     writeblk(rootpos,neighborblk);
+                    //     return;
+                    // }
+
                     writeblk(parentblk.child[index-1],neighborblk);
                     if(parentblk.size<MINSIZE){
                         removeadjust(parentblk,layer[--curlayer]);
@@ -331,13 +368,13 @@ private:
                         blk.child[i]=neighborblk.child[j];
                     }
                     blk.size+=MINSIZE;
+                    blk.nextblock=neighborblk.nextblock;
                     blk.child[blk.size]=neighborblk.child[MINSIZE];
                     removedata(parentblk,0);
                     removechild(parentblk,1);
                     writeblk(parentblk.child[0],blk);
                     //only condition that shortens the height
-                    if(parentblk.nodetype==ROOT&&parentblk.size==0){
-                        rootpos=parentblk.child[0];
+                    if(rootadjust(blk,parentblk,1)){
                         return;
                     }
                     // writeblk(blk.parentpos,parentblk);
@@ -363,13 +400,13 @@ private:
                         neighborblk.child[i]=blk.child[j];
                     }
                     neighborblk.size+=MINSIZE-1;
+                    neighborblk.nextblock=blk.nextblock;
                     neighborblk.child[neighborblk.size]=blk.child[blk.size];
 
                     removedata(parentblk,index-1);
                     removechild(parentblk,index);
                     writeblk(parentblk.child[index-1],neighborblk);
-                    if(parentblk.nodetype==ROOT&&parentblk.size==0){
-                        rootpos=parentblk.child[0];
+                    if(rootadjust(neighborblk,parentblk,0)){
                         return;
                     }
                     if(parentblk.size<MINSIZE){
@@ -425,8 +462,7 @@ public:
         layer[curlayer++]=rootpos;
         readblk(rootpos,blk);
         if(blk.size==0){
-            blk.data[0]=ele;
-            blk.size++;
+            insertdata(ele,blk,0);
             writeblk(rootpos,blk);
             return 0;
         }
