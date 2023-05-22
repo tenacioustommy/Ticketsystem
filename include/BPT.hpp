@@ -95,7 +95,6 @@ private:
         //root can never be deleted from file
         NODE nodetype=LEAF;
         int size=0;
-        pos_t parentpos=-1;
         //nextblockpos, only when isleaf==1, it has meaning
         pos_t nextblock=-1;
         //element num<=maxsize,i give one more for buffer
@@ -108,6 +107,9 @@ private:
 private:
     pos_t smallpos;
     pos_t rootpos;
+    //from root layer
+    pos_t layer[5];
+    int curlayer;
     /*available pos indicate where is available */
     pos_t avai=-1;
     std::fstream file;
@@ -134,7 +136,7 @@ private:
         blk.child[i]=chd;
     }
     void removechild(Block& blk,int i){
-        for(int j=i;j<blk.size+1;j++){
+        for(int j=i;j<blk.size;j++){
             blk.child[j]=blk.child[j+1];
         }
     }
@@ -146,7 +148,7 @@ private:
         blk.size++;
     }
     void removedata(Block& blk,int i){
-        for(int j=i;j<blk.size;j++){
+        for(int j=i;j<blk.size-1;j++){
             blk.data[j]=blk.data[j+1];
         }
         blk.size--;
@@ -167,8 +169,6 @@ private:
             blk.nodetype=ROOT;
             left.nodetype=LEAF;
             right.nodetype=LEAF;
-            left.parentpos=0;
-            right.parentpos=0;
             for(int i=0;i<MINSIZE;i++){
                 left.data[i]=blk.data[i];
             }
@@ -189,8 +189,6 @@ private:
         }else if(blk.nodetype==ROOT){
             left.nodetype=BRANCH;
             right.nodetype=BRANCH;
-            left.parentpos=0;
-            right.parentpos=0;
             for(int i=0;i<MINSIZE;i++){
                 left.data[i]=blk.data[i];
                 left.child[i]=blk.child[i];
@@ -211,9 +209,8 @@ private:
             writeblk(rootpos,blk);
             return;
         }else if(blk.nodetype==LEAF){
-            readblk(blk.parentpos,parentblk);
+            readblk(layer[curlayer-1],parentblk);
             right.nodetype=LEAF;
-            right.parentpos=blk.parentpos;
             for(int i=MINSIZE,j=0;i<MAXSIZE+1;i++,j++){
                 right.data[j]=blk.data[i];
             }
@@ -229,33 +226,32 @@ private:
             writeblk(pos,blk);
             writeblk(avai,right);
             if(parentblk.size>MAXSIZE){
-                insertadjust(parentblk,blk.parentpos);
+                insertadjust(parentblk,layer[--curlayer]);
             }else{
-                writeblk(blk.parentpos,parentblk);
+                writeblk(layer[curlayer-1],parentblk);
             }
             return;
         }else{
-            readblk(blk.parentpos,parentblk);
+            readblk(layer[curlayer-1],parentblk);
             right.nodetype=BRANCH;
-            right.parentpos=blk.parentpos;
             for(int i=MINSIZE+1,j=0;i<MAXSIZE+1;i++,j++){
                 right.data[j]=blk.data[i];
                 right.child[j]=blk.child[i];
             }
             right.child[MINSIZE]=blk.child[MAXSIZE+1];
             blk.size=MINSIZE;
-            right.size=MINSIZE+1;
+            right.size=MINSIZE;
 
-            int i=findindex(right.data[0],parentblk);
-            insertdata(right.data[0],blk,i);
-            insertchild(avai,blk,i+1); 
+            int i=findindex(blk.data[MINSIZE],parentblk);
+            insertdata(blk.data[MINSIZE],parentblk,i);
+            insertchild(avai,parentblk,i+1); 
             writeblk(pos,blk);
             writeblk(avai,right);
             if (parentblk.size>MAXSIZE)
             {   
-                insertadjust(parentblk,blk.parentpos);/* code */
+                insertadjust(parentblk,layer[--curlayer]);/* code */
             }else{
-                writeblk(blk.parentpos,parentblk);
+                writeblk(layer[curlayer-1],parentblk);
             }
             return;
         }
@@ -264,7 +260,7 @@ private:
         Block parentblk,neighborblk;
         int index;
         if(blk.nodetype==LEAF){
-            readblk(blk.parentpos,parentblk);
+            readblk(layer[curlayer-1],parentblk);
             index=findindex(blk.data[0],parentblk);
             if(index==0){
                 readblk(parentblk.child[index+1],neighborblk);
@@ -277,7 +273,7 @@ private:
                     // adjusthead();
                     writeblk(parentblk.child[0],blk);
                     writeblk(parentblk.child[1],neighborblk);
-                    writeblk(blk.parentpos,parentblk);
+                    writeblk(layer[curlayer-1],parentblk);
                 }else{
                     for(int i=blk.size,j=0;i<blk.size+MINSIZE;i++,j++){
                         blk.data[i]=neighborblk.data[j];
@@ -286,9 +282,8 @@ private:
                     removedata(parentblk,0);
                     removechild(parentblk,1);
                     writeblk(parentblk.child[0],blk);
-                    // writeblk(blk.parentpos,parentblk);
                     if(parentblk.size<MINSIZE){
-                        removeadjust(parentblk,blk.parentpos);
+                        removeadjust(parentblk,layer[--curlayer]);
                     }
                 }  
             }else{
@@ -299,7 +294,7 @@ private:
                     parentblk.data[index-1]=blk.data[0];
                     writeblk(parentblk.child[index],blk);
                     writeblk(parentblk.child[index-1],neighborblk);
-                    writeblk(blk.parentpos,parentblk);
+                    writeblk(layer[curlayer-1],parentblk);
                 }else{
                     for(int i=neighborblk.size,j=0;i<neighborblk.size+MINSIZE-1;i++,j++){
                         neighborblk.data[i]=blk.data[j];
@@ -309,12 +304,12 @@ private:
                     removechild(parentblk,index);
                     writeblk(parentblk.child[index-1],neighborblk);
                     if(parentblk.size<MINSIZE){
-                        removeadjust(parentblk,blk.parentpos);
+                        removeadjust(parentblk,layer[--curlayer]);
                     }
                 }
             }
         }else if(blk.nodetype==BRANCH){
-            readblk(blk.parentpos,parentblk);
+            readblk(layer[curlayer-1],parentblk);
             index=findindex(blk.data[0],parentblk);
             if(index==0){
                 readblk(parentblk.child[index+1],neighborblk);
@@ -328,7 +323,7 @@ private:
                     // adjusthead();
                     writeblk(parentblk.child[0],blk);
                     writeblk(parentblk.child[1],neighborblk);
-                    writeblk(blk.parentpos,parentblk);
+                    writeblk(layer[curlayer-1],parentblk);
                 }else{
                     insertdata(parentblk.data[0],blk,blk.size);
                     for(int i=blk.size,j=0;i<blk.size+MINSIZE;i++,j++){
@@ -347,7 +342,7 @@ private:
                     }
                     // writeblk(blk.parentpos,parentblk);
                     if(parentblk.size<MINSIZE){
-                        removeadjust(parentblk,blk.parentpos);
+                        removeadjust(parentblk,layer[--curlayer]);
                     }
                 }  
             }else{
@@ -360,7 +355,7 @@ private:
                     //child is at last no need to remove
                     writeblk(parentblk.child[index],blk);
                     writeblk(parentblk.child[index-1],neighborblk);
-                    writeblk(blk.parentpos,parentblk);
+                    writeblk(layer[curlayer-1],parentblk);
                 }else{
                     insertdata(parentblk.data[index-1],neighborblk,neighborblk.size);
                     for(int i=neighborblk.size,j=0;i<neighborblk.size+MINSIZE-1;i++,j++){
@@ -378,7 +373,7 @@ private:
                         return;
                     }
                     if(parentblk.size<MINSIZE){
-                        removeadjust(parentblk,blk.parentpos);
+                        removeadjust(parentblk,layer[--curlayer]);
                     }
                 }
             }
@@ -394,11 +389,12 @@ public:
     bool remove(const Key& key,const Value& val){
         Element ele(key,val);
         Block blk;
-        pos_t pos=rootpos;
+        curlayer=0;
+        layer[curlayer++]=rootpos;
+        readblk(layer[curlayer-1],blk);
         while (1)
         { 
             int i=findindex(ele,blk);
-            pos_t curpos;
             //judge if it has child node
             if(blk.nodetype<=LEAF){
                 //element doesn't exist
@@ -408,17 +404,14 @@ public:
                 i--;
                 removedata(blk,i);
                 if(blk.size<MINSIZE){
-                    removeadjust(blk,pos);
+                    removeadjust(blk,layer[--curlayer]);
                 }else{
-                    writeblk(pos,blk);
+                    writeblk(layer[curlayer-1],blk);
                 }
                 return 1;
             }else{
-                curpos=pos;
-                pos=blk.child[i];
-                readblk(pos,blk);
-                //assign dad
-                blk.parentpos=curpos;
+                layer[curlayer++]=blk.child[i];
+                readblk(layer[curlayer-1],blk);
             }
         }
         
@@ -428,17 +421,17 @@ public:
     int insert(const Key& key,const Value val){
         Element ele(key,val);
         Block blk;
-        pos_t pos=rootpos;
-        readblk(pos,blk);
+        curlayer=0;
+        layer[curlayer++]=rootpos;
+        readblk(rootpos,blk);
         if(blk.size==0){
             blk.data[0]=ele;
             blk.size++;
-            writeblk(pos,blk);
+            writeblk(rootpos,blk);
             return 0;
         }
         while(1){
             int i=findindex(ele,blk);
-            int curpos;
             //judge if it has child node
             if(blk.nodetype<=LEAF){
                 //repeated element
@@ -447,17 +440,15 @@ public:
                 }
                 insertdata(ele,blk,i);
                 if(blk.size>MAXSIZE){
-                    insertadjust(blk,pos);
+                    insertadjust(blk,layer[--curlayer]);
                 }else{
-                    writeblk(pos,blk);
+                    writeblk(layer[curlayer-1],blk);
                 }
                 return 0;
             }else{
-                curpos=pos;
-                pos=blk.child[i];
-                readblk(pos,blk);
-                //assign dad
-                blk.parentpos=curpos;
+                layer[curlayer++]=blk.child[i];
+                readblk(layer[curlayer-1],blk);
+                
             }
         }
         return -1;
@@ -516,6 +507,8 @@ public:
         }else{
             file.read(CAST(&rootpos),sizeof(int));
             file.read(CAST(&smallpos),sizeof(int));
+            file.seekg(0,ios::end);
+            avai=file.tellg();
         }
         if(!file){
             throw std::runtime_error("file not open");
