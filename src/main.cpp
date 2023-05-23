@@ -1,7 +1,7 @@
 #include"BPT.hpp"
 int main(){
-    std::freopen("input.dat","r",stdin);
-    std::freopen("output.dat","w",stdout);
+    // std::freopen("input.dat","r",stdin);
+    // std::freopen("output.dat","w",stdout);
     int num;
     std::string instruction;
     ios::sync_with_stdio(false);
