@@ -441,6 +441,7 @@ public:
                 }
                 i--;
                 removedata(blk,i);
+                //change according key
                 if(elepos!=-1){
                     tmpblk.data[index]=blk.data[0];
                     writeblk(elepos,tmpblk);
@@ -452,6 +453,7 @@ public:
                 }
                 return 1;
             }else{
+                //change according key
                 if(i!=0&&blk.data[i-1]==ele){
                     tmpblk=blk;
                     index=i-1;
@@ -532,7 +534,6 @@ public:
             }else{
                 pos=blk.child[index];
             }
-            
         }
     }
     BPT(const char* filena){
@@ -566,6 +567,4 @@ public:
         file.close();
     }
 };
-
-
 #endif
