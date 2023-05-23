@@ -4,7 +4,7 @@
 #include<fstream>
 #include<cstring>
 #include<vector>
-#define M 4
+#define M 140
 #define CAST(N) reinterpret_cast<char*>(N)
 using std::cin,std::cout,std::endl,std::ios;
 const int MAXSIZE=M,MINSIZE=M/2;
@@ -259,11 +259,12 @@ private:
     bool rootadjust(Block& blk,Block& parentblk,bool leftorright){
         if(parentblk.size==0&&parentblk.nodetype==ROOT){
             //rootleaf
-            if(curlayer==1){
+            if(blk.nodetype==LEAF){
                 blk.nodetype=ROOTLEAF;
             }else{
                 blk.nodetype=ROOT;
             }
+            
             rootpos=parentblk.child[leftorright];
             writeblk(rootpos,blk);
             return 1;
@@ -419,10 +420,6 @@ private:
             writeblk(pos,blk);
         }
     }
-    //modify previous index if first data is removed
-    void adjusthead(){
-
-    }
 public:
     bool remove(const Key& key,const Value& val){
         Element ele(key,val);
@@ -549,7 +546,6 @@ public:
             file.write(CAST(&rootpos),sizeof(int));
             file.write(CAST(&smallpos),sizeof(int));
             Block blk;
-            //root pos never changes!! and never delete
             blk.nodetype=ROOTLEAF;
             file.write(CAST(&blk),sizeofblock);
             avai=file.tellp();
