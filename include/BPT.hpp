@@ -136,7 +136,7 @@ private:
         blk.child[i]=chd;
     }
     void removechild(Block& blk,int i){
-        for(int j=i;j<blk.size;j++){
+        for(int j=i;j<blk.size+1;j++){
             blk.child[j]=blk.child[j+1];
         }
     }
@@ -257,7 +257,7 @@ private:
         }
     }
     bool rootadjust(Block& blk,Block& parentblk,bool leftorright){
-        if(parentblk.size==0){
+        if(parentblk.size==0&&parentblk.nodetype==ROOT){
             //rootleaf
             if(curlayer==1){
                 blk.nodetype=ROOTLEAF;
@@ -303,6 +303,9 @@ private:
                     writeblk(parentblk.child[0],blk);
                     if(parentblk.size<MINSIZE){
                         removeadjust(parentblk,layer[--curlayer]);
+                        return;
+                    }else{
+                        writeblk(layer[curlayer-1],parentblk);
                     }
                 }  
             }else{
@@ -327,21 +330,12 @@ private:
                     if(rootadjust(neighborblk,parentblk,0)){
                         return;
                     }
-                    // if(parentblk.size==0){
-                    //     //rootleaf
-                    //     if(curlayer==1){
-                    //         neighborblk.nodetype=ROOTLEAF;
-                    //     }else{
-                    //         neighborblk.nodetype=ROOT;
-                    //     }
-                    //     rootpos=parentblk.child[0];
-                    //     writeblk(rootpos,neighborblk);
-                    //     return;
-                    // }
-
                     writeblk(parentblk.child[index-1],neighborblk);
                     if(parentblk.size<MINSIZE){
                         removeadjust(parentblk,layer[--curlayer]);
+                        return;
+                    }else{
+                        writeblk(layer[curlayer-1],parentblk);
                     }
                 }
             }
@@ -372,14 +366,18 @@ private:
                     blk.child[blk.size]=neighborblk.child[MINSIZE];
                     removedata(parentblk,0);
                     removechild(parentblk,1);
-                    writeblk(parentblk.child[0],blk);
+                    
                     //only condition that shortens the height
                     if(rootadjust(blk,parentblk,1)){
                         return;
                     }
+                    writeblk(parentblk.child[0],blk);
                     // writeblk(blk.parentpos,parentblk);
                     if(parentblk.size<MINSIZE){
                         removeadjust(parentblk,layer[--curlayer]);
+                        return;
+                    }else{
+                        writeblk(layer[curlayer-1],parentblk);
                     }
                 }  
             }else{
@@ -405,12 +403,15 @@ private:
 
                     removedata(parentblk,index-1);
                     removechild(parentblk,index);
-                    writeblk(parentblk.child[index-1],neighborblk);
                     if(rootadjust(neighborblk,parentblk,0)){
                         return;
                     }
+                    writeblk(parentblk.child[index-1],neighborblk);
                     if(parentblk.size<MINSIZE){
                         removeadjust(parentblk,layer[--curlayer]);
+                        return;
+                    }else{
+                        writeblk(layer[curlayer-1],parentblk);
                     }
                 }
             }
@@ -425,13 +426,16 @@ private:
 public:
     bool remove(const Key& key,const Value& val){
         Element ele(key,val);
-        Block blk;
+        Block blk,tmpblk;
+        pos_t elepos=-1;
+        int index;
         curlayer=0;
         layer[curlayer++]=rootpos;
         readblk(layer[curlayer-1],blk);
         while (1)
         { 
             int i=findindex(ele,blk);
+            
             //judge if it has child node
             if(blk.nodetype<=LEAF){
                 //element doesn't exist
@@ -440,6 +444,10 @@ public:
                 }
                 i--;
                 removedata(blk,i);
+                if(elepos!=-1){
+                    tmpblk.data[index]=blk.data[0];
+                    writeblk(elepos,tmpblk);
+                }
                 if(blk.size<MINSIZE){
                     removeadjust(blk,layer[--curlayer]);
                 }else{
@@ -447,6 +455,11 @@ public:
                 }
                 return 1;
             }else{
+                if(i!=0&&blk.data[i-1]==ele){
+                    tmpblk=blk;
+                    index=i-1;
+                    elepos=layer[curlayer-1];
+                }
                 layer[curlayer++]=blk.child[i];
                 readblk(layer[curlayer-1],blk);
             }
@@ -547,10 +560,15 @@ public:
             avai=file.tellg();
         }
         if(!file){
-            throw std::runtime_error("file not open");
+            throw std::runtime_error("file error");
         }
     }
-    ~BPT(){}
+    ~BPT(){
+        file.seekp(0);
+        file.write(CAST(&rootpos),sizeof(int));
+        file.write(CAST(&smallpos),sizeof(int));
+        file.close();
+    }
 };
 
 
