@@ -4,7 +4,7 @@
 #include"BPT.hpp"
 using Username_t=string<20>;
 using Pass_t=string<30>; 
-using Name_t=string<10>;
+using Name_t=string<15>;
 using Mail_t=string<30>;
 class Account
 {
@@ -61,7 +61,7 @@ public:
         if(it!=logged.end()&&accindex.find(tmpusername,pos)){
             User user;
             readuser(user,pos);
-            if(it->second>=user.pvil){
+            if(it->second>user.pvil||curusername==tmpusername){
                 if(!tmppwd.isempty()){
                     user.pwd=tmppwd;
                 }
@@ -94,7 +94,7 @@ public:
         if(it!=logged.end()&&accindex.find(tmpusername,pos)){
             User user;
             readuser(user,pos);
-            if(it->second>=user.pvil){
+            if(it->second>user.pvil||curusername==tmpusername){
                 tmpuser=user;
                 return &tmpuser;
             }else{
@@ -143,7 +143,7 @@ public:
             if(it!=logged.end()&&it->second>tmppvil){
                 //judge newusername is unique
                 Pos_t tmp;
-                if(accindex.find(tmpusername,tmp)){
+                if(!accindex.find(tmpusername,tmp)){
                     writenewuser(user);
                     return 0;
                 }else{
@@ -176,7 +176,7 @@ public:
     }
 };
 std::ostream& operator<<(std::ostream& out,const Account::User& user){
-    out<<user.username<<" "<<user.name<<" "<<user.mail<<" "<<user.pvil<<"\n";
+    out<<user.username<<" "<<user.name<<" "<<user.mail<<" "<<user.pvil;
     return out;
 }
 Account account;

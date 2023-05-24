@@ -3,10 +3,12 @@
 #include<iostream>
 #include<fstream>
 #include<vector>
+#include<filesystem>
 #include"String.hpp"
 #define M 140
 #define CAST(N) reinterpret_cast<char*>(N)
 using std::cin,std::cout,std::endl,std::ios;
+namespace fs=std::filesystem;
 const int MAXSIZE=M,MINSIZE=M/2;
 enum NODE{ROOTLEAF,LEAF,ROOT,BRANCH};
 
@@ -527,6 +529,7 @@ public:
         }
     }
     BPT(const char* filena){
+        fs::create_directory("output");
         filename=filena;
         file.open(filename,ios::binary|ios::in|ios::out);
         if(!file){
@@ -547,6 +550,7 @@ public:
             avai=file.tellg();
         }
         if(!file){
+                
             throw std::runtime_error("file error");
         }
     }

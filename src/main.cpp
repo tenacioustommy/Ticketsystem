@@ -1,14 +1,17 @@
-#include"BPT.hpp"
-#include"Account.hpp"
 #include<sstream>
 #include<filesystem>
+#include"BPT.hpp"
+#include"Account.hpp"
+
 namespace fs=std::filesystem;
 
 int main(){
-    fs::create_directory("output");
+    std::freopen("data/normal/basic_2/1.in", "r", stdin);
+    std::freopen("1.out","w",stdout);
+    
     ios::sync_with_stdio(false);
     std::stringstream ss;
-    std::string cmd[20];
+    std::string cmd[30];
     std::string buf,line;
     std::string input[10];
     
@@ -20,71 +23,81 @@ int main(){
             //cmd[0]=timestamp
             cmd[cmd_cnt++]=buf;
         }
+        //used for debug
+        if(cmd[0]=="[1703]"){
+            int a=1;
+        }
+        //end debug
         if(cmd[1]=="add_user"){
             int tmp;
             for(int i=2;i<cmd_cnt;i+=2){
                 if(cmd[i]=="-c"){
                     input[1]=cmd[i+1];
                 }else if(cmd[i]=="-u"){
-                    input[2]==cmd[i+1];
+                    input[2]=cmd[i+1];
                 }else if(cmd[i]=="-p"){
-                    input[3]==cmd[i+1];
+                    input[3]=cmd[i+1];
                 }else if(cmd[i]=="-n"){
-                    input[4]==cmd[i+1];
+                    input[4]=cmd[i+1];
                 }else if(cmd[i]=="-m"){
-                    input[5]==cmd[i+1];
+                    input[5]=cmd[i+1];
                 }else if(cmd[i]=="-g"){
+                    ss.clear();
                     ss<<cmd[i+1];
                     ss>>tmp;
                 }
             }
             cout<<account.Adduser(Username_t(input[1]),Username_t(input[2]),Pass_t(input[3]),
-                        Name_t(input[4]),Mail_t(input[5]),tmp);
+                        Name_t(input[4]),Mail_t(input[5]),tmp)<<"\n";
             
         }else if(cmd[1]=="login"){
             for(int i=2;i<cmd_cnt;i+=2){
                 if(cmd[i]=="-u"){
-                    input[1]==cmd[i+1];
+                    input[1]=cmd[i+1];
                 }else if(cmd[i]=="-p"){
-                    input[2]==cmd[i+1];
+                    input[2]=cmd[i+1];
                 }
             }
-            cout<<account.Login(Username_t(input[1]),Pass_t(input[2]));
+            cout<<account.Login(Username_t(input[1]),Pass_t(input[2]))<<"\n";
         }else if(cmd[1]=="logout"){
             for(int i=2;i<cmd_cnt;i+=2){
-                if(cmd[i]=="-p"){
-                    input[1]==cmd[i+1];
+                if(cmd[i]=="-u"){
+                    input[1]=cmd[i+1];
                 }
             }
-            cout<<account.Logout(Username_t(input[1]));
+            cout<<account.Logout(Username_t(input[1]))<<"\n";
         }else if(cmd[1]=="query_profile"){
             for(int i=2;i<cmd_cnt;i+=2){
                 if(cmd[i]=="-c"){
                     input[1]=cmd[i+1];
                 }else if(cmd[i]=="-u"){
-                    input[2]==cmd[i+1];
+                    input[2]=cmd[i+1];
                 }
             }
             auto p=account.Query(Username_t(input[1]),Username_t(input[2]));
             if(p!=nullptr){
-                cout<<*p;
+                cout<<*p<<"\n";
             }else{
-                cout<<-1;
+                cout<<-1<<"\n";
             }
         }else if(cmd[1]=="modify_profile"){
             int tmp=-1;
+            for(int i=1;i<6;i++){
+                input[i].clear();
+            }
             for(int i=2;i<cmd_cnt;i+=2){
                 if(cmd[i]=="-c"){
                     input[1]=cmd[i+1];
                 }else if(cmd[i]=="-u"){
-                    input[2]==cmd[i+1];
+                    input[2]=cmd[i+1];
                 }else if(cmd[i]=="-p"){
-                    input[3]==cmd[i+1];
+                    input[3]=cmd[i+1];
                 }else if(cmd[i]=="-n"){
-                    input[4]==cmd[i+1];
+                    input[4]=cmd[i+1];
                 }else if(cmd[i]=="-m"){
-                    input[5]==cmd[i+1];
+                    input[5]=cmd[i+1];
                 }else if(cmd[i]=="-g"){
+                    ss.clear();
                     ss<<cmd[i+1];
                     ss>>tmp;
                 }
@@ -92,17 +105,16 @@ int main(){
             auto p=account.Modify(Username_t(input[1]),Username_t(input[2]),Pass_t(input[3]),
                         Name_t(input[4]),Mail_t(input[5]),tmp);
             if(p!=nullptr){
-                cout<<*p;
+                cout<<*p<<"\n";
             }else{
-                cout<<-1;
+                cout<<-1<<"\n";
             }
         }else if(cmd[1]=="exit"){
+            cout<<"bye\n";
             break;
         }
     }
     
-    
-    system("pause");
     return 0;
 }
 // int main(){
