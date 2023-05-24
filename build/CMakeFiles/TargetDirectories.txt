@@ -1,3 +1,0 @@
-/home/tenacious/code/Ticket-System/build/CMakeFiles/rebuild_cache.dir
-/home/tenacious/code/Ticket-System/build/CMakeFiles/edit_cache.dir
-/home/tenacious/code/Ticket-System/build/CMakeFiles/code.dir
