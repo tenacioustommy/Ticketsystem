@@ -1,0 +1,7 @@
+[
+{
+  "directory": "/home/tenacious/code/Ticket-System/build",
+  "command": "/usr/bin/c++   -I/home/tenacious/code/Ticket-System/include  -g   -o CMakeFiles/code.dir/src/main.o -c /home/tenacious/code/Ticket-System/src/main.cpp",
+  "file": "/home/tenacious/code/Ticket-System/src/main.cpp"
+}
+]
