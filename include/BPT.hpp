@@ -2,49 +2,14 @@
 #define BPT_H
 #include<iostream>
 #include<fstream>
-#include<cstring>
 #include<vector>
+#include"String.hpp"
 #define M 140
 #define CAST(N) reinterpret_cast<char*>(N)
 using std::cin,std::cout,std::endl,std::ios;
 const int MAXSIZE=M,MINSIZE=M/2;
 enum NODE{ROOTLEAF,LEAF,ROOT,BRANCH};
 
-template<int SIZE>
-struct string {
-    char buf[SIZE+1];
-    string(){buf[0]='\0';}
-    string(const char* str){
-        strncpy(buf,str,SIZE);
-        buf[SIZE]='\0';
-    }
-    string(const std::string str){
-        strcpy(buf,str.c_str());
-    }
-    bool operator< (const string &rhs) const {
-        return strcmp(buf, rhs.buf) < 0;
-    }
-    bool operator> (const string &rhs) const {
-        return strcmp(buf, rhs.buf) > 0;
-    }
-    bool operator>= (const string &rhs) const {
-        return strcmp(buf, rhs.buf) >= 0;
-    }
-    bool operator<= (const string &rhs) const {
-        return strcmp(buf, rhs.buf) <= 0;
-    }
-    bool operator== (const string &rhs) const {
-        return strcmp(buf, rhs.buf) == 0;
-    }
-    bool operator!= (const string &rhs) const {
-        return strcmp(buf, rhs.buf) != 0;
-    }
-    string& operator= (const string &rhs){
-        if(this==&rhs) return *this;
-        strcpy(buf,rhs.buf);
-        return *this;
-    }
-};
 template<class Key,class Value>
 class BPT
 {
@@ -501,7 +466,32 @@ public:
         }
         return -1;
     }
-    bool find(const Key& key,std::vector<Value>& vec){
+    //only when key is unique can you use this function
+    bool find(const Key& key,Value& val){
+        Block blk;
+        int pos=rootpos;
+        int index;
+        while(1){
+            readblk(pos,blk);
+            for(index=0;index<blk.size;index++){
+                //here is <= because there maybe the same key at left side
+                if(key<blk.data[index].str){
+                    break;
+                }
+            }
+            if(blk.nodetype<=LEAF){
+                if(blk.data[index-1].str==key){
+                    val=blk.data[index-1].val;
+                    return 1;
+                }else{
+                    return 0;
+                }
+            }else{
+                pos=blk.child[index];
+            }
+        }
+    }
+    bool findall(const Key& key,std::vector<Value>& vec){
         Block blk;
         int pos=rootpos;
         int index;
@@ -560,6 +550,7 @@ public:
             throw std::runtime_error("file error");
         }
     }
+    BPT()=default;
     ~BPT(){
         file.seekp(0);
         file.write(CAST(&rootpos),sizeof(int));
