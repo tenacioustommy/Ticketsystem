@@ -1,6 +1,6 @@
 #ifndef HEADER_H
 #define HEADER_H
-#include"string.hpp"
+#include"String.hpp"
 using Username_t=string<20>;
 using Pass_t=string<30>; 
 using Name_t=string<15>;
