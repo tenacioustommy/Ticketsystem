@@ -2,15 +2,11 @@
 #define ACCOUNT_H
 #include<map>
 #include"BPT.hpp"
-using Username_t=string<20>;
-using Pass_t=string<30>; 
-using Name_t=string<15>;
-using Mail_t=string<30>;
+#include"Header.h"
+#include"File.h"
 class Account
 {
-using Pos_t= int;
-using Logpair=std::pair<Username_t,int>;
-    
+    friend class Ticketsys;
 private:
     struct User
     {
@@ -28,12 +24,11 @@ private:
     };
     friend std::ostream& operator<<(std::ostream& out,const Account::User& user);
     int sizeofuser=sizeof(User);
-    std::string filename="output/accfile";
 
 private:
     User tmpuser;
     BPT<Username_t,Pos_t> accindex;
-    std::fstream accfile;
+    File accfile;
     //put username and privilege
     std::map<Username_t,int> logged;
     int num;
@@ -42,25 +37,16 @@ private:
     void writenewuser(User& user){
         accfile.seekp(0,ios::end);
         accindex.insert(user.username,accfile.tellp());
-        accfile.write(CAST(&user),sizeofuser);
+        accfile.write(CAST(&user),sizeofuser,0,ios::end);
         num++;
     }
-    void readuser(User& user,const Pos_t& pos){
-        accfile.seekg(pos);
-        accfile.read(CAST(&user),sizeofuser);
-    }
-    void reviseuser(User& user,const Pos_t& pos){
-        accfile.seekp(pos);
-        accfile.write(CAST(&user),sizeofuser);
-    }
-public:
-    User* Modify(const Username_t& curusername,const Username_t& tmpusername,const Pass_t& tmppwd=Pass_t(),
-            const Name_t tmpname=Name_t(),const Mail_t tmpmail=Mail_t(),const int tmppvil=-1){
+    int Modify(const Username_t& curusername,const Username_t& tmpusername,const Pass_t& tmppwd,
+            const Name_t& tmpname,const Mail_t& tmpmail,const int tmppvil=-1){
         auto it=logged.find(curusername);
         Pos_t pos;
         if(it!=logged.end()&&accindex.find(tmpusername,pos)){
             User user;
-            readuser(user,pos);
+            accfile.read(CAST(&user),sizeofuser,pos);
             if(it->second>user.pvil||curusername==tmpusername){
                 if(!tmppwd.isempty()){
                     user.pwd=tmppwd;
@@ -75,33 +61,33 @@ public:
                     if(tmppvil<it->second){
                         user.pvil=tmppvil;
                     }else{
-                        return nullptr;
+                        return -1;
                     }
                 }
-                tmpuser=user;
-                reviseuser(user,pos);
-                return &tmpuser;
+                accfile.write(CAST(&user),sizeofuser,pos); 
+                cout<<user<<"\n";
+                return 0;
             }else{
-                return nullptr;
+                return -1;
             }
         }else{
-            return nullptr;
+            return -1;
         }
     }
-    User* Query(const Username_t& curusername,const Username_t& tmpusername){
+    int Query(const Username_t& curusername,const Username_t& tmpusername){
         auto it=logged.find(curusername);
         Pos_t pos;
         if(it!=logged.end()&&accindex.find(tmpusername,pos)){
             User user;
-            readuser(user,pos);
+            accfile.read(CAST(&user),sizeofuser,pos);
             if(it->second>user.pvil||curusername==tmpusername){
-                tmpuser=user;
-                return &tmpuser;
+                cout<<user<<"\n";
+                return 0;
             }else{
-                return nullptr;
+                return -1;
             }
         }else{
-            return nullptr;
+            return -1;
         }
     }
     int Logout(const Username_t& tmpusername){
@@ -119,7 +105,7 @@ public:
         if(logged.find(tmpusername)==logged.end()&&accindex.find(tmpusername,pos)){
             //check pwd
             User user;
-            readuser(user,pos);
+            accfile.read(CAST(&user),sizeofuser,pos);
             if(user.pwd==tmppwd){
                 logged.insert(Logpair(tmpusername,user.pvil));
                 return 0;
@@ -154,25 +140,49 @@ public:
             }
         }
     }
-    Account():accindex("output/accindex"){
-        accfile.open(filename,ios::binary|ios::in|ios::out);
-        if(!accfile){
-            accfile.open(filename,ios::out);
-            accfile.close();
-            accfile.open(filename,ios::binary|ios::in|ios::out);
-            num=0;
-            accfile.seekp(0);
-            accfile.write(CAST(&num),sizeof(int));
+public:
+    bool islogged(const Username_t& username){
+        if(logged.find(username)!=logged.end()){
+            return 1;
+        }else return 0;
+    }
+    int Modify(const std::string& curusername,const std::string& tmpusername,const Pass_t& tmppwd,
+            const std::string& tmpname,const std::string& tmpmail,const std::string& tmppvil){
+        if(tmppvil.empty()){
+            return Modify(Username_t(curusername),Username_t(tmpusername),Pass_t(tmppwd),
+            Name_t(tmpname),Mail_t(tmpmail));
         }else{
-            accfile.read(CAST(&num),sizeof(int));
+            return Modify(Username_t(curusername),Username_t(tmpusername),Pass_t(tmppwd),
+            Name_t(tmpname),Mail_t(tmpmail),std::stoi(tmppvil));
         }
-        if(!accfile){
-            throw std::runtime_error("accfile error");
+    }
+    int Query(const std::string& curusername,const std::string& tmpusername){
+        return Query(Username_t(curusername),Username_t(tmpusername));
+    }
+    
+    int Logout(const std::string& tmpusername){
+        return Logout(Username_t(tmpusername));
+    }
+    
+    int Login(const std::string& tmpusername,const Pass_t& tmppwd){
+        return Login(Username_t(tmpusername),Pass_t(tmppwd));
+    }
+    
+    int Adduser(const std::string& curusername,const std::string& tmpusername,const Pass_t& tmppwd,
+            const std::string& tmpname,const std::string& tmpmail,const std::string& tmppvil){
+        return Adduser(Username_t(curusername),Username_t(tmpusername),Pass_t(tmppwd),
+            Name_t(tmpname),Mail_t(tmpmail),std::stoi(tmppvil));
+    }
+    Account():accindex("output/accindex"){
+        if(accfile.init(path+"accfile")){
+            num=0;
+            accfile.write(CAST(&num),sizeof(int),0);
+        }else{
+            accfile.read(CAST(&num),sizeof(int),0);
         }
     }
     ~Account(){
-        accfile.seekp(0);
-        accfile.write(CAST(&num),sizeof(int));
+        accfile.write(CAST(&num),sizeof(int),0);
     }
 };
 std::ostream& operator<<(std::ostream& out,const Account::User& user){

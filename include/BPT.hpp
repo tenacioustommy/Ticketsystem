@@ -388,6 +388,57 @@ private:
         }
     }
 public:
+    //only when key is unique can you use
+    bool removeunique(const Key& key,Value& val){
+        Block blk,tmpblk;
+        pos_t elepos=-1;
+        int index;
+        curlayer=0;
+        layer[curlayer++]=rootpos;
+        readblk(layer[curlayer-1],blk);
+        while (1)
+        { 
+            int i;
+            for(i=0;i<blk.size;i++){
+                if(key<blk.data[i].str){
+                    break;
+                }
+            }
+            //judge if it has child node
+            if(blk.nodetype<=LEAF){
+                //element doesn't exist
+                if(i==0||blk.data[i-1].str!=key){
+                    return 0;
+                }else{
+                    val=blk.data[i-1].val;
+                }
+                i--;
+                removedata(blk,i);
+                //change according key
+                if(elepos!=-1){
+                    tmpblk.data[index]=blk.data[0];
+                    writeblk(elepos,tmpblk);
+                }
+                if(blk.size<MINSIZE){
+                    removeadjust(blk,layer[--curlayer]);
+                }else{
+                    writeblk(layer[curlayer-1],blk);
+                }
+                return 1;
+            }else{
+                //change according key
+                if(i!=0&&blk.data[i-1].str==key){
+                    tmpblk=blk;
+                    index=i-1;
+                    elepos=layer[curlayer-1];
+                }
+                layer[curlayer++]=blk.child[i];
+                readblk(layer[curlayer-1],blk);
+            }
+        }
+        
+        
+    }
     bool remove(const Key& key,const Value& val){
         Element ele(key,val);
         Block blk,tmpblk;
@@ -433,7 +484,7 @@ public:
         
         
     }
-    //success return pos fail return -1 todo
+    //success return 0 fail return -1 todo
     int insert(const Key& key,const Value val){
         Element ele(key,val);
         Block blk;
@@ -528,7 +579,7 @@ public:
             }
         }
     }
-    BPT(const char* filena){
+    BPT(std::string filena){
         fs::create_directory("output");
         filename=filena;
         file.open(filename,ios::binary|ios::in|ios::out);
