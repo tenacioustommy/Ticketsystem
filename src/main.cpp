@@ -7,7 +7,7 @@
 namespace fs=std::filesystem;
 
 int main(){
-    std::freopen("data/normal/basic_2/1.in", "r", stdin);
+    std::freopen("data/roll_back/basic_3/1.in", "r", stdin);
     std::freopen("1.out","w",stdout);
     
     ios::sync_with_stdio(false);
@@ -28,6 +28,8 @@ int main(){
         if(cmd[0]=="[7197]"){
             int a=1;
         }
+        //for debug
+        cout<<cmd[0]<<" ";
         //end debug
         if(cmd[1]=="add_user"){
             for(int i=2;i<cmd_cnt;i+=2){
@@ -162,6 +164,20 @@ int main(){
             }
            
             ticketsys.Query_ticket(input[1],input[2],input[3],input[4]);
+        }else if(cmd[1]=="query_transfer"){
+            input[4].clear();
+            for(int i=2;i<cmd_cnt;i+=2){
+                if(cmd[i]=="-s"){
+                    input[1]=cmd[i+1];
+                }else if(cmd[i]=="-t"){
+                    input[2]=cmd[i+1];
+                }else if(cmd[i]=="-d"){
+                    input[3]=cmd[i+1];
+                }else if(cmd[i]=="-p"){
+                    input[4]=cmd[i+1];
+                }
+            }
+            ticketsys.Query_transfer(input[1],input[2],input[3],input[4]);
         }else if(cmd[1]=="buy_ticket"){
             input[7].clear();
             for(int i=2;i<cmd_cnt;i+=2){
@@ -181,8 +197,7 @@ int main(){
                     input[7]=cmd[i+1];
                 }
             } 
-            //for debug
-            // cout<<cmd[0];
+            
             if(ticketsys.Buy_ticket(cmd[0],input[1],input[2],input[3],input[4],input[5],input[6],input[7])==-1){
                 cout<<-1<<"\n";
             }
@@ -204,13 +219,22 @@ int main(){
                 }
             }
             cout<<ticketsys.Refund_ticket(input[1],input[2])<<"\n";
-        }
-        else if(cmd[1]=="exit"){
+        }else if(cmd[1]=="clean"){
+            std::remove((path+"accfile").c_str());
+            std::remove((path+"accindex").c_str());
+            std::remove((path+"orderfile").c_str());
+            std::remove((path+"orderindex").c_str());
+            std::remove((path+"released").c_str());
+            std::remove((path+"seatfile").c_str());
+            std::remove((path+"stationindex").c_str());
+            std::remove((path+"trainfile").c_str());
+            std::remove((path+"trainindex").c_str());
+           
+        }else if(cmd[1]=="exit"){
             cout<<"bye\n";
             break;
         }
     }
-    
     return 0;
 }
 
