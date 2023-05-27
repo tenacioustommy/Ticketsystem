@@ -29,7 +29,7 @@ int main(){
             int a=1;
         }
         //for debug
-        cout<<cmd[0]<<" ";
+        // cout<<cmd[0]<<" ";
         //end debug
         if(cmd[1]=="add_user"){
             for(int i=2;i<cmd_cnt;i+=2){
