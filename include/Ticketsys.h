@@ -334,6 +334,9 @@ private:
         if(find_stationindex(train,arrival,end)==-1){
             return -1;
         }
+        if(start>=end){
+            return -1;
+        }
         order.departindex=start;
         order.arrivalindex=end;
         for(int i=0;i<start;i++){

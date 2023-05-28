@@ -1,8 +1,0 @@
-Difference found at line 359:
-File1: Ibutadvanceamome 山西省长治市 07-11 05:19 -> 天津市 07-11 13:21 906 69951
-File2: Ibutadvanceamome 山西省长治市 07-11 05:19 -> 北京市 07-11 18:19 1805 69951
-
-Difference found at line 360:
-File1: Howtheyinuretoth 天津市 07-11 19:29 -> 辽宁省丹东市 07-12 09:04 1171 55042
-File2: Howtheyinuretoth 北京市 07-12 03:53 -> 辽宁省丹东市 07-12 09:04 176 55042
-
