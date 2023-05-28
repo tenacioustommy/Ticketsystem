@@ -786,6 +786,9 @@ public:
         }
     }
     ~Ticketsys(){
+        if(queuesize>100000){
+            throw std::runtime_error("overbound");
+        }
         queuefile.write(CAST(&queuesize),sizeof(queuesize),0);
         queuefile.write(CAST(queue),sizeof(pair<ID,Pos_t>)*queuesize,4);
     }
