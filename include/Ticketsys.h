@@ -23,9 +23,7 @@ private:
     BPT<Username_t,Pos_t> orderindex;
     File orderfile;
     //store the trainid and pos in orderfile
-    pair<ID,Pos_t> queue[100000];
-    int queuesize;
-    File queuefile;
+    BPT<ID,Pos_t> queue;
     struct Train
     {
         ID trainid;
@@ -197,7 +195,7 @@ private:
         orderfile.seekp(0,ios::end);
         Pos_t pos=orderfile.tellp();
         if(order.status=="[pending]"){
-            queue[queuesize++]=pair<ID,Pos_t>(order.trainid,pos);
+            queue.insert(order.trainid,pos);
             // queue.push_back(pair<ID,Pos_t>(order.trainid,pos));
         }
         orderindex.insert(username,pos);
@@ -688,28 +686,19 @@ private:
                 }
                 refund_seat(seat,to_relative_day(order.startdate),order.num,order.departindex,order.arrivalindex);
                 //find if there is more ticket for queue
-                int index=0;
-                while(index!=queuesize){
-                    //trainid not equal
-                    if(queue[index].first!=order.trainid){
-                        index++;
-                    }else{
-                        Order pending;
-                        orderfile.read(CAST(&pending),sizeof(pending),queue[index].second);
-                        if(buy_seat(seat,to_relative_day(pending.startdate),pending.num,pending.departindex,pending.arrivalindex)==-1){
-                            //buy seat fail,move to next one
-                            index++;
-                        }else{
-                            //success then change status,write and delete queue
-                            pending.status="[success]";
-                            orderfile.write(CAST(&pending),sizeof(pending),queue[index].second);
-                            //remove ele
-                            queuesize--;
-                            for(int i=index;i<queuesize;i++){
-                                queue[i]=queue[i+1];
-                            }
-                        }
+                vector<Pos_t> queuevec;
+                queue.findall(order.trainid,queuevec);
+                auto it=queuevec.begin();
+                while(it!=queuevec.end()){
+                    Order pending;
+                    orderfile.read(CAST(&pending),sizeof(pending),*it);
+                    if(buy_seat(seat,to_relative_day(pending.startdate),pending.num,pending.departindex,pending.arrivalindex)!=-1){
+                        //success then change status,write and delete queue
+                        pending.status="[success]";
+                        orderfile.write(CAST(&pending),sizeof(pending),*it);
+                        queue.remove(order.trainid,*it);
                     }
+                    it++;
                 }
                 //write seatfile at last
                 seatfile.write(CAST(&seat),sizeof(seat),pos);
@@ -782,24 +771,13 @@ public:
             tmpprice,Time_t(tmpstarttime),tmptraveltime,tmpstoptime,tmpsaledate,tmptype.c_str()[0]);
         
     }
-    Ticketsys():traindex(path+"trainindex"),seatindex(path+"released"),
-                stationindex(path+"stationindex"),orderindex(path+"orderindex"){
+    Ticketsys():traindex(path+"trainindex"),seatindex(path+"released"),stationindex(path+"stationindex"),
+                orderindex(path+"orderindex"),queue(path+"queueindex"){
         trainfile.init(path+"trainfile");
         seatfile.init(path+"seatfile");
         orderfile.init(path+"orderfile");
-        if(!queuefile.init(path+"queuefile")){
-            //old file
-            queuefile.read(CAST(&queuesize),sizeof(queuesize),0);
-            queuefile.read(CAST(queue),sizeof(pair<ID,Pos_t>)*queuesize,4);
-        }
     }
-    ~Ticketsys(){
-        if(queuesize>100000){
-            throw std::runtime_error("overbound");
-        }
-        queuefile.write(CAST(&queuesize),sizeof(queuesize),0);
-        queuefile.write(CAST(queue),sizeof(pair<ID,Pos_t>)*queuesize,4);
-    }
+    ~Ticketsys(){}
 };
 Ticketsys ticketsys;
 
