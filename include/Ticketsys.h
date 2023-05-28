@@ -19,11 +19,12 @@ private:
     //id to seatindex, which can also indicate release or not
     BPT<ID,Pos_t> seatindex;
     File seatfile;
-    //id to orderindex
+    //username to orderindex
     BPT<Username_t,Pos_t> orderindex;
-    File orderfile;
     //store the trainid and pos in orderfile
     BPT<ID,Pos_t> queue;
+    File orderfile;
+    
     struct Train
     {
         ID trainid;
@@ -202,15 +203,9 @@ private:
         orderfile.write(CAST(&order),sizeof(order),0,ios::end);
     }
     //read order by username and sort from new to old
-    int readorder(const Username_t& username,std::vector<Order>& ordervec,std::vector<Pos_t>& posvec){
-        Order order;
-        //posvec increase
+    int readorder(const Username_t& username,std::vector<Pos_t>& posvec){
+        //posvec new to old
         if(orderindex.findall(username,posvec)){
-            for(auto it=posvec.begin();it!=posvec.end();it++){
-                orderfile.read(CAST(&order),sizeof(order),*it);
-                ordervec.push_back(order);
-            }
-            std::reverse(ordervec.begin(),ordervec.end());
             std::reverse(posvec.begin(),posvec.end());
             return 0;
         }else{
@@ -649,13 +644,14 @@ private:
         if(!account.islogged(username)){
             return -1;
         }
-        std::vector<Order> ordervec;
         std::vector<Pos_t> posvec;
-        if(readorder(username,ordervec,posvec)!=-1){
-            cout<<ordervec.size()<<"\n";
-            for(auto it=ordervec.begin();it!=ordervec.end();it++){
-                cout<<it->status<<" "<<it->trainid<<" "<<it->departure<<" "<<it->departdate<<" "<<it->departtime<<" -> "<<
-                it->arrival<<" "<<it->arrivaldate<<" "<<it->arrivaltime<<" "<<it->price<<" "<<it->num<<"\n";
+        if(readorder(username,posvec)!=-1){
+            cout<<posvec.size()<<"\n";
+            Order order;
+            for(auto it=posvec.begin();it!=posvec.end();it++){
+                orderfile.read(CAST(&order),sizeof(order),*it);
+                 cout<<order.status<<" "<<order.trainid<<" "<<order.departure<<" "<<order.departdate<<" "<<order.departtime<<" -> "<<
+                order.arrival<<" "<<order.arrivaldate<<" "<<order.arrivaltime<<" "<<order.price<<" "<<order.num<<"\n";
             }
         }else{
             cout<<0<<"\n";
@@ -666,14 +662,15 @@ private:
         if(!account.islogged(username)){
             return -1;
         }
-        std::vector<Order> ordervec;
+        //to do,optimize memory
         std::vector<Pos_t> posvec;
-        if(readorder(username,ordervec,posvec)!=-1){
+        if(readorder(username,posvec)!=-1){
             //nth order don't exist
-            if(n>ordervec.size()){
+            if(n>posvec.size()){
                 return -1;
             }
-            Order order=ordervec[n-1];
+            Order order;
+            orderfile.read(CAST(&order),sizeof(order),posvec[n-1]);
             if(order.status=="[success]"){
                 //change order status
                 order.status="[refunded]";
@@ -707,6 +704,8 @@ private:
                 //change order status
                 order.status="[refunded]";
                 orderfile.write(CAST(&order),sizeof(order),posvec[n-1]);
+                //delete queuedata
+                queue.remove(order.trainid,posvec[n-1]);
                 return 0;
             }else{
                 return -1;
