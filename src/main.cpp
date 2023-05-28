@@ -5,10 +5,9 @@
 #include"Ticketsys.h"
 
 namespace fs=std::filesystem;
-//[862852] query_order -u GreyThroat
 int main(){
-    std::freopen("data/advance_2/2.in", "r", stdin);
-    std::freopen("1.out","w",stdout);
+    // std::freopen("data/advance_2/3.in", "r", stdin);
+    // std::freopen("1.out","w",stdout);
     
     ios::sync_with_stdio(false);
     std::stringstream ss;
