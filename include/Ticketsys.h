@@ -223,13 +223,10 @@ private:
     struct Ticket
     {
         ID trainid;
-        Time_t departtime;
-        Time_t arrivaltime;
-        int overalltime;
+        Date_Time departdt;
         int price;
         int seatnum;
-        Date_t departdate;
-        Date_t arrivaldate;
+        Date_Time arrivaldt;
         Station_t depart;
         Station_t arrival;
     };
@@ -237,9 +234,9 @@ private:
     {
     public:
         bool operator()(const Ticket& t1,const Ticket& t2)const{
-            if(t1.overalltime<t2.overalltime){
+            if((t1.arrivaldt-t1.departdt)<(t2.arrivaldt-t2.departdt)){
                 return 1;
-            }else if(t1.overalltime==t2.overalltime){
+            }else if((t1.arrivaldt-t1.departdt)==(t2.arrivaldt-t2.departdt)){
                 return t1.trainid<t2.trainid;
             }
             return 0;
@@ -341,7 +338,7 @@ private:
         order.arrivalindex=end;
         for(int i=0;i<start;i++){
             starttime+=train.traveltime[i]+train.stoptime[i];
-            if(starttime>1440){
+            if(starttime>=1440){
                 starttime-=1440;
                 day--;
             }
@@ -385,7 +382,7 @@ private:
             }else{
                 starttime+=train.traveltime[i]+train.stoptime[i];
             }
-            if(starttime>1440){
+            if(starttime>=1440){
                 starttime-=1440;
                 day++;
             }
@@ -429,9 +426,8 @@ private:
                 cout<<train.stations[i]<<" "<<relative_to_date(day)<<" "<<min_to_time(min)<<" -> xx-xx xx:xx "<<price<<" x\n";
             }else{
                 cout<<train.stations[i]<<" "<<relative_to_date(day)<<" "<<min_to_time(min)<<" -> ";
-                
                 min+=train.stoptime[i-1];
-                if(min>1440){
+                if(min>=1440){
                     min-=1440;
                     day++;
                 }
@@ -439,7 +435,7 @@ private:
                 min+=train.traveltime[i];
                 price+=train.price[i];
             }
-            if(min>1440){
+            if(min>=1440){
                 min-=1440;
                 day++;
             }
@@ -447,15 +443,16 @@ private:
         return 0;
     }
 
-    bool achieveticket(Ticket& ticket,const Train& train,int start,int end,const Date_t& date){
+    bool achieveticket(Ticket& ticket,const Train& train,int start,int end,const Date& curdate){
         Seats seat;
+        Date_Time dt;
         if(start>=end||readseat(train.trainid,seat)==-1){
             return 0;
         }
-        int day=to_relative_day(date),min=time_to_min(train.starttime);
+        int day=to_relative_day(curdate.buf),min=time_to_min(train.starttime);
         for(int i=0;i<start;i++){
             min+=train.traveltime[i]+train.stoptime[i];
-            if(min>1440){
+            if(min>=1440){
                 min-=1440;
                 day--;
             }
@@ -463,31 +460,25 @@ private:
         if(!isonsale(train,day)){
             return 0;
         }
-        ticket.departtime=min_to_time(min);
+        ticket.departdt.time=Time(min_to_time(min));
+        dt.date=curdate;
+        dt.time=Time(min_to_time(min));
         ticket.seatnum=find_min_seat(seat,start,end,day);
-        day=to_relative_day(date);
-        int price=0,overalltime=0;
+        int price=0;
         for(int i=start;i<end;i++){
             price+=train.price[i];
             if(i==end-1){
-                overalltime+=train.traveltime[i];
-                min+=train.traveltime[i]; 
+                dt+=train.traveltime[i]; 
             }else{
-                overalltime+=train.traveltime[i]+train.stoptime[i];
-                min+=train.traveltime[i]+train.stoptime[i];
-            }
-            if(min>1440){
-                min-=1440;
-                day++;
+                dt+=train.traveltime[i]+train.stoptime[i];
             }
         }
         ticket.depart=train.stations[start];
         ticket.arrival=train.stations[end];
-        ticket.departdate=date;
-        ticket.arrivaldate=relative_to_date(day);
+        ticket.departdt.date=curdate;
+        ticket.arrivaldt.date=dt.date;
         ticket.price=price;
-        ticket.arrivaltime=min_to_time(min);
-        ticket.overalltime=overalltime;
+        ticket.arrivaldt.time=dt.time;
         ticket.trainid=train.trainid;
         return 1;
     }
@@ -522,21 +513,21 @@ private:
         if(opt=="time"){
             cout<<tickettimeset.size()<<"\n";
             for(auto it=tickettimeset.begin();it!=tickettimeset.end();it++){
-                cout<<it->trainid<<" "<<departstation<<" "<<date<<" "<<it->departtime<<" -> "<<arrivalstation<<" "<<it->arrivaldate<<" "<<it->arrivaltime<<" "<<it->price<<" "<<it->seatnum<<"\n";
+                cout<<it->trainid<<" "<<departstation<<" "<<it->departdt<<" -> "<<arrivalstation<<" "<<it->arrivaldt<<" "<<it->price<<" "<<it->seatnum<<"\n";
             }
         }else if(opt=="cost"){
             cout<<ticketcostset.size()<<"\n";
             for(auto it=ticketcostset.begin();it!=ticketcostset.end();it++){
-                cout<<it->trainid<<" "<<departstation<<" "<<date<<" "<<it->departtime<<" -> "<<arrivalstation<<" "<<it->arrivaldate<<" "<<it->arrivaltime<<" "<<it->price<<" "<<it->seatnum<<"\n";
+                cout<<it->trainid<<" "<<departstation<<" "<<it->departdt<<" -> "<<arrivalstation<<" "<<it->arrivaldt<<" "<<it->price<<" "<<it->seatnum<<"\n";
             }
         }
     }
     //t1,t2 original,t3,t4 new 
     bool Comptransfer(const Ticket& t1,const Ticket& t2,const Ticket& t3,const Ticket& t4,const std::string& opt){
         if(opt=="time"){
-            if(t1.overalltime+t2.overalltime<t3.overalltime+t4.overalltime){
+            if((t2.arrivaldt-t1.departdt)<(t4.arrivaldt-t3.departdt)){
                 return 1;
-            }else if(t1.overalltime+t2.overalltime==t3.overalltime+t4.overalltime){
+            }else if((t2.arrivaldt-t1.departdt)==(t4.arrivaldt-t3.departdt)){
                 if(t1.price+t2.price<t3.price+t4.price){
                     return 1;
                 }else if(t1.price+t2.price==t3.price+t4.price){
@@ -552,9 +543,9 @@ private:
             if(t1.price+t2.price<t3.price+t4.price){
                 return 1;
             }else if(t1.price+t2.price==t3.price+t4.price){
-                if(t1.overalltime+t2.overalltime==t3.overalltime+t4.overalltime){
+                if((t2.arrivaldt-t1.departdt)<(t4.arrivaldt-t3.departdt)){
                     return 1;
-                }else if(t1.overalltime+t2.overalltime<t3.overalltime+t4.overalltime){
+                }else if((t2.arrivaldt-t1.departdt)==(t4.arrivaldt-t3.departdt)){
                     if(t1.trainid<t3.trainid){
                         return 1;
                     }else if(t1.trainid==t3.trainid){
@@ -570,7 +561,7 @@ private:
         vector<Train> trainvec1,trainvec2;
         vector<Pos_t> vec1,vec2;
         Ticket ticket1,ticket2,tmpticket1,tmpticket2;
-        ticket1.overalltime=ticket2.overalltime=ticket1.price=ticket2.price=1e9;
+        bool ishaveticket=false;
         stationindex.findall(departstation,vec1);
         stationindex.findall(arrivalstation,vec2);
         Train train;
@@ -585,6 +576,9 @@ private:
         int start,end,mid;
         for(auto it1=trainvec1.begin();it1!=trainvec1.end();it1++){
             for(auto it2=trainvec2.begin();it2!=trainvec2.end();it2++){
+                if(it1->trainid==it2->trainid){
+                    continue;
+                }
                 find_stationindex(*it1,departstation,start);
                 find_stationindex(*it2,arrivalstation,end);
                 for(int i=start+1;i<it1->stationnum;i++){
@@ -594,43 +588,51 @@ private:
                             if(!achieveticket(tmpticket1,*it1,start,i,date)){
                                 continue;
                             }
-                            if(to_relative_day(tmpticket1.arrivaldate)<to_relative_day((*it2).saledate[0])){
+                            Date cur=Date((*it2).saledate[0]);
+                            if(tmpticket1.arrivaldt.date<cur){
                                 //i need consider onsale or not in coming days
-                                if(!achieveticket(tmpticket2,*it2,j,end,(*it2).saledate[0])){
-                                    if(!achieveticket(tmpticket2,*it2,j,end,relative_to_date(to_relative_day((*it2).saledate[0])+1))){
-                                        if(!achieveticket(tmpticket2,*it2,j,end,relative_to_date(to_relative_day((*it2).saledate[0])+2))){
-                                            if(!achieveticket(tmpticket2,*it2,j,end,relative_to_date(to_relative_day((*it2).saledate[0])+3))){
+                                if(!achieveticket(tmpticket2,*it2,j,end,cur)){
+                                    if(!achieveticket(tmpticket2,*it2,j,end,cur+1)){
+                                        if(!achieveticket(tmpticket2,*it2,j,end,cur+2)){
+                                            if(!achieveticket(tmpticket2,*it2,j,end,cur+3)){
                                                 continue;
                                             }
                                         } 
                                     }
                                 }
                             }else{
-                                if(!achieveticket(tmpticket2,*it2,j,end,tmpticket1.arrivaldate)){
+                                if(!achieveticket(tmpticket2,*it2,j,end,Date(tmpticket1.arrivaldt.date))){
                                     continue;
                                 }
                             }
                             //time may not be proper
-                            if(tmpticket1.arrivaldate==tmpticket2.departdate&&time_to_min(tmpticket1.arrivaltime)>time_to_min(tmpticket2.departtime)){
-                                if(!achieveticket(tmpticket2,*it2,j,end,relative_to_date(to_relative_day(tmpticket2.departdate)+1))){
+                            if(tmpticket2.departdt<tmpticket1.arrivaldt){
+                                if(!achieveticket(tmpticket2,*it2,j,end,tmpticket2.departdt.date+1)){
                                     continue;
                                 }
                             }
-                            if(!Comptransfer(ticket1,ticket2,tmpticket1,tmpticket2,opt)){
+                            //no ticket at all
+                            if(!ishaveticket){
                                 ticket1=tmpticket1;
                                 ticket2=tmpticket2;
+                                ishaveticket=true;
+                            }else{
+                                if(!Comptransfer(ticket1,ticket2,tmpticket1,tmpticket2,opt)){
+                                    ticket1=tmpticket1;
+                                    ticket2=tmpticket2;
+                                }
                             }
                         }
                     }
                 }
             }
         }
-        if(ticket1.overalltime==1e9){
+        if(!ishaveticket){
             cout<<0<<"\n";
             return;
         }else{
-            cout<<ticket1.trainid<<" "<<ticket1.depart<<" "<<ticket1.departdate<<" "<<ticket1.departtime<<" -> "<<ticket1.arrival<<" "<<ticket1.arrivaldate<<" "<<ticket1.arrivaltime<<" "<<ticket1.price<<" "<<ticket1.seatnum<<"\n";
-            cout<<ticket2.trainid<<" "<<ticket2.depart<<" "<<ticket2.departdate<<" "<<ticket2.departtime<<" -> "<<ticket2.arrival<<" "<<ticket2.arrivaldate<<" "<<ticket2.arrivaltime<<" "<<ticket2.price<<" "<<ticket2.seatnum<<"\n";
+            cout<<ticket1.trainid<<" "<<ticket1.depart<<" "<<ticket1.departdt<<" -> "<<ticket1.arrival<<" "<<ticket1.arrivaldt<<" "<<ticket1.price<<" "<<ticket1.seatnum<<"\n";
+            cout<<ticket2.trainid<<" "<<ticket2.depart<<" "<<ticket2.departdt<<" -> "<<ticket2.arrival<<" "<<ticket2.arrivaldt<<" "<<ticket2.price<<" "<<ticket2.seatnum<<"\n";
             return ;
         }
     }
