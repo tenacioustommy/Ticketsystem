@@ -1,5 +1,5 @@
 # 打开文件并读取每一行数据
-with open('data/basic_extra/5.out', 'r',encoding='utf-8') as file1, open('1.out', 'r',encoding='utf-8') as file2:
+with open('data/advance_1/10.out', 'r',encoding='utf-8') as file1, open('1.out', 'r',encoding='utf-8') as file2:
     # 读取文件内容作为列表
     file1_lines = file1.readlines()
     file2_lines = file2.readlines()

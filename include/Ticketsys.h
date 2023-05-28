@@ -334,7 +334,7 @@ private:
         if(find_stationindex(train,arrival,end)==-1){
             return -1;
         }
-        if(start>=end){
+        if(start>=end||num>train.seatnum){
             return -1;
         }
         order.departindex=start;
@@ -592,7 +592,8 @@ private:
                                 continue;
                             }
                             Date cur=Date((*it2).saledate[0]);
-                            if(tmpticket1.arrivaldt.date<cur){
+                            Date arridate=tmpticket1.arrivaldt.date;
+                            if(arridate<cur){
                                 //i need consider onsale or not in coming days
                                 if(!achieveticket(tmpticket2,*it2,j,end,cur)){
                                     if(!achieveticket(tmpticket2,*it2,j,end,cur+1)){
@@ -604,8 +605,15 @@ private:
                                     }
                                 }
                             }else{
-                                if(!achieveticket(tmpticket2,*it2,j,end,Date(tmpticket1.arrivaldt.date))){
-                                    continue;
+                                //i need consider onsale or not in coming days
+                                if(!achieveticket(tmpticket2,*it2,j,end,arridate)){
+                                    if(!achieveticket(tmpticket2,*it2,j,end,arridate+1)){
+                                        if(!achieveticket(tmpticket2,*it2,j,end,arridate+2)){
+                                            if(!achieveticket(tmpticket2,*it2,j,end,arridate+3)){
+                                                continue;
+                                            }
+                                        } 
+                                    }
                                 }
                             }
                             //time may not be proper

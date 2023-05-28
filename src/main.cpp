@@ -7,8 +7,8 @@
 namespace fs=std::filesystem;
 
 int main(){
-    // std::freopen("data/basic_extra/5.in", "r", stdin);
-    // std::freopen("1.out","w",stdout);
+    std::freopen("data/advance_1/10.in", "r", stdin);
+    std::freopen("1.out","w",stdout);
     
     ios::sync_with_stdio(false);
     std::stringstream ss;
@@ -24,7 +24,7 @@ int main(){
             cmd[cmd_cnt++]=buf;
         }
         //used for debug
-        if(cmd[0]=="[1835309]"){
+        if(cmd[0]=="[995867]"){
             int a=1;
         }
         cout<<cmd[0]<<" ";
