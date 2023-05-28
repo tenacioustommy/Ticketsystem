@@ -5,6 +5,7 @@
 #include"util.h"
 #include<algorithm>
 #include<set>
+
 class Ticketsys
 {   
 private:
@@ -22,8 +23,9 @@ private:
     BPT<Username_t,Pos_t> orderindex;
     File orderfile;
     //store the trainid and pos in orderfile
-    vector<pair<ID,Pos_t>> queue;
-    int sizeoftrain=sizeof(Train);
+    pair<ID,Pos_t> queue[100000];
+    int queuesize;
+    File queuefile;
     struct Train
     {
         ID trainid;
@@ -38,6 +40,7 @@ private:
         Date_t saledate[2];
         char type;
     };
+    int sizeoftrain=sizeof(Train);
     void separate(Train& train,const std::string& str,int num,std::string where){
         int start = 0, end = 0,i=0;
         char separator='|';
@@ -149,7 +152,7 @@ private:
         }
     }
     int find_min_seat(const Seats& seat,int start,int end,int day){
-        int min=100000;
+        int min=INT32_MAX;
         for(int i=start;i<end;i++){
             if(seat.count[day][i]<min){
                 min=seat.count[day][i];
@@ -168,8 +171,7 @@ private:
         }
         return 0;
     }
-    void refund_seat(const Train& train,Seats& seat,const int day,const int& num,
-                const int start,const int end){
+    void refund_seat(Seats& seat,const int day,const int& num,const int start,const int end){
         for(int i=start;i<end;i++){
             seat.count[day][i]+=num;
         }
@@ -194,8 +196,9 @@ private:
     void writeorder(const Username_t& username,Order& order){
         orderfile.seekp(0,ios::end);
         Pos_t pos=orderfile.tellp();
-        if(order.status=="pending"){
-            queue.push_back(pair<ID,Pos_t>(order.trainid,pos));
+        if(order.status=="[pending]"){
+            queue[queuesize++]=pair<ID,Pos_t>(order.trainid,pos);
+            // queue.push_back(pair<ID,Pos_t>(order.trainid,pos));
         }
         orderindex.insert(username,pos);
         orderfile.write(CAST(&order),sizeof(order),0,ios::end);
@@ -210,6 +213,7 @@ private:
                 ordervec.push_back(order);
             }
             std::reverse(ordervec.begin(),ordervec.end());
+            std::reverse(posvec.begin(),posvec.end());
             return 0;
         }else{
             return -1;
@@ -665,26 +669,32 @@ private:
                 orderfile.write(CAST(&order),sizeof(order),posvec[n-1]);
                 //refund seat
                 Seats seat;
-                Pos_t pos=readseat(order.trainid,seat);
-                for(int i=order.departindex;i<order.arrivalindex;i++){
-                    seat.count[to_relative_day(order.startdate)][i]+=order.num;
+                Pos_t pos;
+                if((pos=readseat(order.trainid,seat))==-1){
+                    throw std::runtime_error("fatal error");
                 }
+                refund_seat(seat,to_relative_day(order.startdate),order.num,order.departindex,order.arrivalindex);
                 //find if there is more ticket for queue
-                for(auto it=queue.begin();it!=queue.end();it++){
+                int index=0;
+                while(index!=queuesize){
                     //trainid not equal
-                    if(it->first!=order.trainid){
-                        continue;
+                    if(queue[index].first!=order.trainid){
+                        index++;
                     }else{
                         Order pending;
-                        orderfile.read(CAST(&pending),sizeof(pending),it->second);
-                        if(buy_seat(seat,to_relative_day(order.startdate),order.num,order.departindex,order.arrivalindex)==-1){
+                        orderfile.read(CAST(&pending),sizeof(pending),queue[index].second);
+                        if(buy_seat(seat,to_relative_day(pending.startdate),pending.num,pending.departindex,pending.arrivalindex)==-1){
                             //buy seat fail,move to next one
-                            continue;
+                            index++;
                         }else{
                             //success then change status,write and delete queue
                             pending.status="[success]";
-                            orderfile.write(CAST(&pending),sizeof(pending),it->second);
-                            queue.erase(it);
+                            orderfile.write(CAST(&pending),sizeof(pending),queue[index].second);
+                            //remove ele
+                            queuesize--;
+                            for(int i=index;i<queuesize;i++){
+                                queue[i]=queue[i+1];
+                            }
                         }
                     }
                 }
@@ -726,7 +736,6 @@ public:
             return Buy_ticket(stoi(transtime),Username_t(username),ID(trainid),Date_t(date),stoi(num),
                 Station_t(departure),Station_t(arrival),isqueue);
         }
-        
     }
     void Query_transfer(const std::string& departstation,const std::string& arrivalstation,const std::string& date,const std::string& opt){
         if(opt.empty()){
@@ -765,8 +774,16 @@ public:
         trainfile.init(path+"trainfile");
         seatfile.init(path+"seatfile");
         orderfile.init(path+"orderfile");
+        if(!queuefile.init(path+"queuefile")){
+            //old file
+            queuefile.read(CAST(&queuesize),sizeof(queuesize),0);
+            queuefile.read(CAST(queue),sizeof(pair<ID,Pos_t>)*queuesize,4);
+        }
     }
-    ~Ticketsys(){};
+    ~Ticketsys(){
+        queuefile.write(CAST(&queuesize),sizeof(queuesize),0);
+        queuefile.write(CAST(queue),sizeof(pair<ID,Pos_t>)*queuesize,4);
+    }
 };
 Ticketsys ticketsys;
 

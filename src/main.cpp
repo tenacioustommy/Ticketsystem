@@ -7,7 +7,7 @@
 namespace fs=std::filesystem;
 
 int main(){
-    std::freopen("data/roll_back/basic_3/1.in", "r", stdin);
+    std::freopen("data/normal/basic_4/5.in", "r", stdin);
     std::freopen("1.out","w",stdout);
     
     ios::sync_with_stdio(false);
@@ -21,11 +21,10 @@ int main(){
         ss.clear();
         ss<<line;
         while(ss>>buf){
-            //cmd[0]=timestamp
             cmd[cmd_cnt++]=buf;
         }
         //used for debug
-        if(cmd[0]=="[7197]"){
+        if(cmd[0]=="[10468]"){
             int a=1;
         }
         //for debug
