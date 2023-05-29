@@ -6,8 +6,8 @@
 
 namespace fs=std::filesystem;
 int main(){
-    std::freopen("data/advance_2/3.in", "r", stdin);
-    std::freopen("1.out","w",stdout);
+    // std::freopen("data/advance_2/3.in", "r", stdin);
+    // std::freopen("1.out","w",stdout);
     ios::sync_with_stdio(false);
     std::stringstream ss;
     std::string cmd[30];
