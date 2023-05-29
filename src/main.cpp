@@ -2,8 +2,8 @@
 #include"BPT.hpp"
 #include"Ticketsys.h"
 int main(){
-    // std::freopen("data/advance_2/1.in", "r", stdin);
-    // std::freopen("1.out","w",stdout);
+    std::freopen("data/basic_2/1.in", "r", stdin);
+    std::freopen("1.out","w",stdout);
     ios::sync_with_stdio(false);
     std::stringstream ss;
     std::string cmd[30];
@@ -18,9 +18,9 @@ int main(){
             cmd[cmd_cnt++]=buf;
         }
         //used for debug
-        // if(cmd[0]=="[995867]"){
-        //     int a=1;
-        // }
+        if(cmd[0]=="[5143]"){
+            int a=1;
+        }
         cout<<cmd[0]<<" ";
         if(cmd[1]=="add_user"){
             for(int i=2;i<cmd_cnt;i+=2){

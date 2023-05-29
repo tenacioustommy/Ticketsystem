@@ -2,9 +2,12 @@
 #define BPT_H
 #include"Header.h"
 #define M 140
+#define CAST(N) reinterpret_cast<char*>(N)
 using std::cin,std::cout,std::endl,std::ios;
+namespace fs=std::filesystem;
 const int MAXSIZE=M,MINSIZE=M/2;
 enum NODE{ROOTLEAF,LEAF,ROOT,BRANCH};
+
 template<class Key,class Value>
 class BPT
 {
@@ -79,7 +82,7 @@ private:
         file.read(CAST(&blk),sizeofblock);
     }
     //return writepos
-    Pos_t writeblk(const Pos_t& pos,Block& blk){
+    Pos_t writeblk(Pos_t pos,Block& blk){
         file.seekp(pos);
         file.write(CAST(&blk),sizeofblock);
         if(pos==avai){
