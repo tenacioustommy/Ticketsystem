@@ -118,7 +118,7 @@ private:
         //don't exist
         return -1;
     }
-    bool isonsale(const Train& train,int day){
+    bool isonsale(const Train& train,const int& day){
         if(day<to_relative_day(train.saledate[0])||day>to_relative_day(train.saledate[1])){
             return 0;
         }else{
@@ -150,7 +150,7 @@ private:
             return pos;
         }
     }
-    int find_min_seat(const Seats& seat,int start,int end,int day){
+    int find_min_seat(const Seats& seat,const int& start,const int& end,const int& day){
         int min=INT32_MAX;
         for(int i=start;i<end;i++){
             if(seat.count[day][i]<min){
@@ -159,7 +159,7 @@ private:
         }
         return min;
     } 
-    int buy_seat(Seats& seat,const int day,const int& num,const int start,const int end){
+    int buy_seat(Seats& seat,const int& day,const int& num,const int& start,const int& end){
         for(int i=start;i<end;i++){
             if(seat.count[day][i]<num){
                 return -1;
@@ -170,7 +170,7 @@ private:
         }
         return 0;
     }
-    void refund_seat(Seats& seat,const int day,const int& num,const int start,const int end){
+    void refund_seat(Seats& seat,const int& day,const int& num,const int& start,const int& end){
         for(int i=start;i<end;i++){
             seat.count[day][i]+=num;
         }
@@ -282,7 +282,7 @@ private:
         }
         throw std::invalid_argument("invalid opt");
     }
-    bool achieveticket(Ticket& ticket,const Train& train,int start,int end,const Date& curdate){
+    bool achieveticket(Ticket& ticket,const Train& train,const int& start,const int& end,const Date& curdate){
         Seats seat;
         Date_Time dt;
         if(start>=end||readseat(train.trainid,seat)==-1){
@@ -380,7 +380,7 @@ public:
     }
     
     int Buy_ticket(std::string& transtime,const Username_t& username,const ID& trainid,const Date_t& date,
-                const int& num,const Station_t& departure,const Station_t& arrival,std::string isqueue="false"){
+                const int& num,const Station_t& departure,const Station_t& arrival,std::string isqueue){
         if(!account.islogged(username)){
             return -1;
         }
@@ -513,9 +513,7 @@ public:
         }
         return 0;
     }
-
-    
-    void Query_ticket(const Station_t& departstation,const Station_t& arrivalstation,const Date_t& date,const std::string& opt="time"){
+    void Query_ticket(const Station_t& departstation,const Station_t& arrivalstation,const Date_t& date,const std::string& opt){
 
         std::vector<Pos_t> vec1,vec2,vec;
         std::set<Ticket,Compbytime> tickettimeset;
@@ -556,7 +554,7 @@ public:
         }
     }
    
-    void Query_transfer(const Station_t& departstation,const Station_t& arrivalstation,const Date_t& date,const std::string& opt="time"){
+    void Query_transfer(const Station_t& departstation,const Station_t& arrivalstation,const Date_t& date,const std::string& opt){
         vector<Train> trainvec1,trainvec2;
         vector<Pos_t> vec1,vec2;
         Ticket ticket1,ticket2,tmpticket1,tmpticket2;
@@ -661,7 +659,7 @@ public:
         }
         return 0;
     }   
-    int Refund_ticket(const Username_t& username,const int n=1){
+    int Refund_ticket(const Username_t& username,const int& n){
         if(!account.islogged(username)){
             return -1;
         }

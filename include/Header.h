@@ -1,6 +1,11 @@
 #ifndef HEADER_H
 #define HEADER_H
 #include"String.hpp"
+#include<filesystem>
+#include<iostream>
+#include<fstream>
+#include<vector>
+#define CAST(N) reinterpret_cast<char*>(N)
 using Username_t=string<20>;
 using Pass_t=string<30>; 
 using Name_t=string<15>;

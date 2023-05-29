@@ -1,21 +1,13 @@
 #ifndef BPT_H
 #define BPT_H
-#include<iostream>
-#include<fstream>
-#include<vector>
-#include<filesystem>
-#include"String.hpp"
+#include"Header.h"
 #define M 140
-#define CAST(N) reinterpret_cast<char*>(N)
 using std::cin,std::cout,std::endl,std::ios;
-namespace fs=std::filesystem;
 const int MAXSIZE=M,MINSIZE=M/2;
 enum NODE{ROOTLEAF,LEAF,ROOT,BRANCH};
-
 template<class Key,class Value>
 class BPT
 {
-    typedef int pos_t;
 private:
     struct Element
     {
@@ -63,31 +55,31 @@ private:
         NODE nodetype=LEAF;
         int size=0;
         //nextblockpos, only when isleaf==1, it has meaning
-        pos_t nextblock=-1;
+        Pos_t nextblock=-1;
         //element num<=maxsize,i give one more for buffer
         Element data[MAXSIZE+1];
         //childpos
-        pos_t child[MAXSIZE+2];
+        Pos_t child[MAXSIZE+2];
     };
     int sizeofblock= sizeof(Block);
     // int sizeofele=sizeof(Element);
 private:
-    pos_t smallpos;
-    pos_t rootpos;
+    Pos_t smallpos;
+    Pos_t rootpos;
     //from root layer
-    pos_t layer[5];
+    Pos_t layer[5];
     int curlayer;
     /*available pos indicate where is available */
-    pos_t avai=-1;
+    Pos_t avai=-1;
     std::fstream file;
     std::string filename;
     //rootpos by default at 0 pos
-    void readblk(pos_t pos,Block& blk){
+    void readblk(const Pos_t& pos,Block& blk){
         file.seekg(pos);
         file.read(CAST(&blk),sizeofblock);
     }
     //return writepos
-    pos_t writeblk(pos_t pos,Block& blk){
+    Pos_t writeblk(const Pos_t& pos,Block& blk){
         file.seekp(pos);
         file.write(CAST(&blk),sizeofblock);
         if(pos==avai){
@@ -96,7 +88,7 @@ private:
         return pos;
     }
     //insert ele in certain index in leafblk
-    void insertchild(const pos_t& chd,Block& blk,int i){
+    void insertchild(const Pos_t& chd,Block& blk,int i){
         for(int j=blk.size;j>i;j--){
             blk.child[j]=blk.child[j-1];
         }
@@ -107,14 +99,14 @@ private:
             blk.child[j]=blk.child[j+1];
         }
     }
-    void insertdata(const Element& ele,Block& blk,int i){
+    void insertdata(const Element& ele,Block& blk,const int& i){
         for(int j=blk.size;j>i;j--){
             blk.data[j]=blk.data[j-1];
         }
         blk.data[i]=ele;
         blk.size++;
     }
-    void removedata(Block& blk,int i){
+    void removedata(Block& blk,const int& i){
         for(int j=i;j<blk.size-1;j++){
             blk.data[j]=blk.data[j+1];
         }
@@ -129,7 +121,7 @@ private:
         throw std::runtime_error("impossible");
     }
     //provide blk and blk's pos!!
-    void insertadjust(Block& blk,int pos){
+    void insertadjust(Block& blk,const Pos_t& pos){
         Block parentblk;
         Block left,right;
         if(blk.nodetype==ROOTLEAF){
@@ -239,7 +231,7 @@ private:
             return 0;
         }
     }
-    void removeadjust(Block& blk,pos_t pos){
+    void removeadjust(Block& blk,const Pos_t& pos){
         Block parentblk,neighborblk;
         int index;
         if(blk.nodetype==LEAF){
@@ -250,7 +242,7 @@ private:
                 //borrow child directly
                 if(neighborblk.size>MINSIZE){
                     insertdata(parentblk.data[0],blk,blk.size);
-                    //first remove then fuzhi
+                    //first remove then copy
                     removedata(neighborblk,0);
                     parentblk.data[0]=neighborblk.data[0];
                     // adjusthead();
@@ -391,7 +383,7 @@ public:
     //only when key is unique can you use
     bool removeunique(const Key& key,Value& val){
         Block blk,tmpblk;
-        pos_t elepos=-1;
+        Pos_t elepos=-1;
         int index;
         curlayer=0;
         layer[curlayer++]=rootpos;
@@ -436,13 +428,11 @@ public:
                 readblk(layer[curlayer-1],blk);
             }
         }
-        
-        
     }
     bool remove(const Key& key,const Value& val){
         Element ele(key,val);
         Block blk,tmpblk;
-        pos_t elepos=-1;
+        Pos_t elepos=-1;
         int index;
         curlayer=0;
         layer[curlayer++]=rootpos;
@@ -485,7 +475,7 @@ public:
         
     }
     //success return 0 fail return -1 todo
-    int insert(const Key& key,const Value val){
+    int insert(const Key& key,const Value& val){
         Element ele(key,val);
         Block blk;
         curlayer=0;
@@ -580,7 +570,7 @@ public:
         }
     }
     BPT(std::string filena){
-        fs::create_directory("output");
+        std::filesystem::create_directory(path);
         filename=filena;
         file.open(filename,ios::binary|ios::in|ios::out);
         if(!file){

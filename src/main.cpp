@@ -1,13 +1,9 @@
 #include<sstream>
-#include<filesystem>
 #include"BPT.hpp"
-#include"Account.h"
 #include"Ticketsys.h"
-
-namespace fs=std::filesystem;
 int main(){
-    // std::freopen("data/advance_2/3.in", "r", stdin);
-    // std::freopen("1.out","w",stdout);
+    std::freopen("data/advance_2/1.in", "r", stdin);
+    std::freopen("1.out","w",stdout);
     ios::sync_with_stdio(false);
     std::stringstream ss;
     std::string cmd[30];
@@ -204,6 +200,7 @@ int main(){
                 cout<<-1<<"\n";
             }
         }else if(cmd[1]=="refund_ticket"){
+            input[2]="1";
             for(int i=2;i<cmd_cnt;i+=2){
                 if(cmd[i]=="-u"){
                     input[1]=cmd[i+1];
@@ -222,7 +219,8 @@ int main(){
             std::remove((path+"stationindex").c_str());
             std::remove((path+"trainfile").c_str());
             std::remove((path+"trainindex").c_str());
-           
+            std::remove((path+"queueindex").c_str());
+            cout<<0<<"\n";
         }else if(cmd[1]=="exit"){
             cout<<"bye\n";
             break;
