@@ -246,8 +246,82 @@ private:
             }
             return 0;
         }
-    };
-private:
+    }; 
+    //t1,t2 original,t3,t4 new 
+    bool Comptransfer(const Ticket& t1,const Ticket& t2,const Ticket& t3,const Ticket& t4,const std::string& opt){
+        if(opt=="time"){
+            if((t2.arrivaldt-t1.departdt)<(t4.arrivaldt-t3.departdt)){
+                return 1;
+            }else if((t2.arrivaldt-t1.departdt)==(t4.arrivaldt-t3.departdt)){
+                if(t1.price+t2.price<t3.price+t4.price){
+                    return 1;
+                }else if(t1.price+t2.price==t3.price+t4.price){
+                    if(t1.trainid<t3.trainid){
+                        return 1;
+                    }else if(t1.trainid==t3.trainid){
+                        return t2.trainid<t4.trainid;
+                    }
+                }
+            }
+            return 0;
+        }else if(opt=="cost"){
+            if(t1.price+t2.price<t3.price+t4.price){
+                return 1;
+            }else if(t1.price+t2.price==t3.price+t4.price){
+                if((t2.arrivaldt-t1.departdt)<(t4.arrivaldt-t3.departdt)){
+                    return 1;
+                }else if((t2.arrivaldt-t1.departdt)==(t4.arrivaldt-t3.departdt)){
+                    if(t1.trainid<t3.trainid){
+                        return 1;
+                    }else if(t1.trainid==t3.trainid){
+                        return t2.trainid<t4.trainid;
+                    }
+                }
+            }
+            return 0;
+        }
+        throw std::invalid_argument("invalid opt");
+    }
+    bool achieveticket(Ticket& ticket,const Train& train,int start,int end,const Date& curdate){
+        Seats seat;
+        Date_Time dt;
+        if(start>=end||readseat(train.trainid,seat)==-1){
+            return 0;
+        }
+        int day=to_relative_day(curdate.buf),min=time_to_min(train.starttime);
+        for(int i=0;i<start;i++){
+            min+=train.traveltime[i]+train.stoptime[i];
+            if(min>=1440){
+                min-=1440;
+                day--;
+            }
+        }
+        if(!isonsale(train,day)){
+            return 0;
+        }
+        ticket.departdt.time=Time(min_to_time(min));
+        dt.date=curdate;
+        dt.time=Time(min_to_time(min));
+        ticket.seatnum=find_min_seat(seat,start,end,day);
+        int price=0;
+        for(int i=start;i<end;i++){
+            price+=train.price[i];
+            if(i==end-1){
+                dt+=train.traveltime[i]; 
+            }else{
+                dt+=train.traveltime[i]+train.stoptime[i];
+            }
+        }
+        ticket.depart=train.stations[start];
+        ticket.arrival=train.stations[end];
+        ticket.departdt.date=curdate;
+        ticket.arrivaldt.date=dt.date;
+        ticket.price=price;
+        ticket.arrivaldt.time=dt.time;
+        ticket.trainid=train.trainid;
+        return 1;
+    }
+public:
     int Delete_train(const ID& tmptrainid){
         Pos_t pos;
         if(seatindex.find(tmptrainid,pos)){
@@ -305,7 +379,7 @@ private:
         return 0;
     }
     
-    int Buy_ticket(int transtime,const Username_t& username,const ID& trainid,const Date_t& date,
+    int Buy_ticket(std::string& transtime,const Username_t& username,const ID& trainid,const Date_t& date,
                 const int& num,const Station_t& departure,const Station_t& arrival,std::string isqueue="false"){
         if(!account.islogged(username)){
             return -1;
@@ -365,7 +439,8 @@ private:
         order.price=price;
         order.trainid=trainid;
         order.num=num;
-        order.time=transtime;
+        transtime.pop_back();
+        order.time=stoi(transtime.substr(1));
         //depart
         order.departtime=min_to_time(starttime);
         order.departdate=date;
@@ -439,45 +514,7 @@ private:
         return 0;
     }
 
-    bool achieveticket(Ticket& ticket,const Train& train,int start,int end,const Date& curdate){
-        Seats seat;
-        Date_Time dt;
-        if(start>=end||readseat(train.trainid,seat)==-1){
-            return 0;
-        }
-        int day=to_relative_day(curdate.buf),min=time_to_min(train.starttime);
-        for(int i=0;i<start;i++){
-            min+=train.traveltime[i]+train.stoptime[i];
-            if(min>=1440){
-                min-=1440;
-                day--;
-            }
-        }
-        if(!isonsale(train,day)){
-            return 0;
-        }
-        ticket.departdt.time=Time(min_to_time(min));
-        dt.date=curdate;
-        dt.time=Time(min_to_time(min));
-        ticket.seatnum=find_min_seat(seat,start,end,day);
-        int price=0;
-        for(int i=start;i<end;i++){
-            price+=train.price[i];
-            if(i==end-1){
-                dt+=train.traveltime[i]; 
-            }else{
-                dt+=train.traveltime[i]+train.stoptime[i];
-            }
-        }
-        ticket.depart=train.stations[start];
-        ticket.arrival=train.stations[end];
-        ticket.departdt.date=curdate;
-        ticket.arrivaldt.date=dt.date;
-        ticket.price=price;
-        ticket.arrivaldt.time=dt.time;
-        ticket.trainid=train.trainid;
-        return 1;
-    }
+    
     void Query_ticket(const Station_t& departstation,const Station_t& arrivalstation,const Date_t& date,const std::string& opt="time"){
 
         std::vector<Pos_t> vec1,vec2,vec;
@@ -518,41 +555,7 @@ private:
             }
         }
     }
-    //t1,t2 original,t3,t4 new 
-    bool Comptransfer(const Ticket& t1,const Ticket& t2,const Ticket& t3,const Ticket& t4,const std::string& opt){
-        if(opt=="time"){
-            if((t2.arrivaldt-t1.departdt)<(t4.arrivaldt-t3.departdt)){
-                return 1;
-            }else if((t2.arrivaldt-t1.departdt)==(t4.arrivaldt-t3.departdt)){
-                if(t1.price+t2.price<t3.price+t4.price){
-                    return 1;
-                }else if(t1.price+t2.price==t3.price+t4.price){
-                    if(t1.trainid<t3.trainid){
-                        return 1;
-                    }else if(t1.trainid==t3.trainid){
-                        return t2.trainid<t4.trainid;
-                    }
-                }
-            }
-            return 0;
-        }else if(opt=="cost"){
-            if(t1.price+t2.price<t3.price+t4.price){
-                return 1;
-            }else if(t1.price+t2.price==t3.price+t4.price){
-                if((t2.arrivaldt-t1.departdt)<(t4.arrivaldt-t3.departdt)){
-                    return 1;
-                }else if((t2.arrivaldt-t1.departdt)==(t4.arrivaldt-t3.departdt)){
-                    if(t1.trainid<t3.trainid){
-                        return 1;
-                    }else if(t1.trainid==t3.trainid){
-                        return t2.trainid<t4.trainid;
-                    }
-                }
-            }
-            return 0;
-        }
-        throw std::invalid_argument("invalid opt");
-    }
+   
     void Query_transfer(const Station_t& departstation,const Station_t& arrivalstation,const Date_t& date,const std::string& opt="time"){
         vector<Train> trainvec1,trainvec2;
         vector<Pos_t> vec1,vec2;
@@ -713,62 +716,6 @@ private:
         }else{
             return -1;
         }
-    }
-    
-public:
-    int Refund_ticket(const std::string& username,const std::string& n){
-        if(n.empty()){
-            return Refund_ticket(Username_t(username));
-        }else{
-            return Refund_ticket(Username_t(username),stoi(n));
-        }
-    }
-    int Query_order(const std::string& username){
-        return Query_order(Username_t(username));
-    }
-    int Buy_ticket(std::string& transtime,const std::string& username,const std::string& trainid,const std::string& date,
-                const std::string& num,const std::string& departure,const std::string& arrival,std::string& isqueue){
-        transtime.pop_back();
-        transtime=transtime.substr(1);
-        if(isqueue.empty()){
-            return Buy_ticket(stoi(transtime),Username_t(username),ID(trainid),Date_t(date),stoi(num),
-                Station_t(departure),Station_t(arrival));
-        }else{
-            return Buy_ticket(stoi(transtime),Username_t(username),ID(trainid),Date_t(date),stoi(num),
-                Station_t(departure),Station_t(arrival),isqueue);
-        }
-    }
-    void Query_transfer(const std::string& departstation,const std::string& arrivalstation,const std::string& date,const std::string& opt){
-        if(opt.empty()){
-            Query_transfer(Station_t(departstation),Station_t(arrivalstation),date);
-        }else{
-            Query_transfer(Station_t(departstation),Station_t(arrivalstation),date,opt);
-        }
-    }
-    void Query_ticket(const std::string& departstation,const std::string& arrivalstation,const std::string& date,const std::string& opt){
-        if(opt.empty()){
-            Query_ticket(Station_t(departstation),Station_t(arrivalstation),date);
-        }else{
-            Query_ticket(Station_t(departstation),Station_t(arrivalstation),date,opt);
-        }
-    }
-    int Query_train(const std::string& trainid,const std::string& date){
-        return Query_train(ID(trainid),Date_t(date));
-    }
-    int Release_train(const std::string& tmptrainid){
-        return Release_train(ID(tmptrainid));
-    }
-    int Delete_train(const std::string& tmptrainid){
-        return Delete_train(ID(tmptrainid));
-    }
-    int Add_train(const std::string& tmptrainid,const std::string& tmpstanum,const std::string& tmpseatnum,
-                const std::string& tmpstation,const std::string& tmpprice,const std::string& tmpstarttime,
-                const std::string& tmptraveltime,const std::string& tmpstoptime,
-                const std::string& tmpsaledate,const std::string& tmptype){
-        
-        return Add_train(ID(tmptrainid),std::stoi(tmpstanum),std::stoi(tmpseatnum),tmpstation,
-            tmpprice,Time_t(tmpstarttime),tmptraveltime,tmpstoptime,tmpsaledate,tmptype.c_str()[0]);
-        
     }
     Ticketsys():traindex(path+"trainindex"),seatindex(path+"released"),stationindex(path+"stationindex"),
                 orderindex(path+"orderindex"),queue(path+"queueindex"){

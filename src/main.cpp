@@ -6,9 +6,8 @@
 
 namespace fs=std::filesystem;
 int main(){
-    // std::freopen("data/advance_2/3.in", "r", stdin);
-    // std::freopen("1.out","w",stdout);
-    
+    std::freopen("data/advance_2/3.in", "r", stdin);
+    std::freopen("1.out","w",stdout);
     ios::sync_with_stdio(false);
     std::stringstream ss;
     std::string cmd[30];
@@ -23,9 +22,9 @@ int main(){
             cmd[cmd_cnt++]=buf;
         }
         //used for debug
-        if(cmd[0]=="[995867]"){
-            int a=1;
-        }
+        // if(cmd[0]=="[995867]"){
+        //     int a=1;
+        // }
         cout<<cmd[0]<<" ";
         if(cmd[1]=="add_user"){
             for(int i=2;i<cmd_cnt;i+=2){
@@ -118,8 +117,8 @@ int main(){
                     input[10]=cmd[i+1];
                 }
             }
-            cout<<ticketsys.Add_train(input[1],input[2],input[3],input[4],
-                input[5],input[6],input[7],input[8],input[9],input[10])<<"\n";
+            cout<<ticketsys.Add_train(input[1],stoi(input[2]),stoi(input[3]),input[4],
+                input[5],input[6],input[7],input[8],input[9],input[10].c_str()[0])<<"\n";
         }else if(cmd[1]=="delete_train"){
             for(int i=2;i<cmd_cnt;i+=2){
                 if(cmd[i]=="-i"){
@@ -146,7 +145,7 @@ int main(){
                 cout<<-1<<"\n";
             }
         }else if(cmd[1]=="query_ticket"){
-            input[4].clear();
+            input[4]="time";
             for(int i=2;i<cmd_cnt;i+=2){
                 if(cmd[i]=="-s"){
                     input[1]=cmd[i+1];
@@ -158,10 +157,9 @@ int main(){
                     input[4]=cmd[i+1];
                 }
             }
-           
             ticketsys.Query_ticket(input[1],input[2],input[3],input[4]);
         }else if(cmd[1]=="query_transfer"){
-            input[4].clear();
+            input[4]="time";
             for(int i=2;i<cmd_cnt;i+=2){
                 if(cmd[i]=="-s"){
                     input[1]=cmd[i+1];
@@ -175,7 +173,7 @@ int main(){
             }
             ticketsys.Query_transfer(input[1],input[2],input[3],input[4]);
         }else if(cmd[1]=="buy_ticket"){
-            input[7].clear();
+            input[7]="false";
             for(int i=2;i<cmd_cnt;i+=2){
                 if(cmd[i]=="-u"){
                     input[1]=cmd[i+1];
@@ -193,8 +191,7 @@ int main(){
                     input[7]=cmd[i+1];
                 }
             } 
-            
-            if(ticketsys.Buy_ticket(cmd[0],input[1],input[2],input[3],input[4],input[5],input[6],input[7])==-1){
+            if(ticketsys.Buy_ticket(cmd[0],input[1],input[2],input[3],stoi(input[4]),input[5],input[6],input[7])==-1){
                 cout<<-1<<"\n";
             }
         }else if(cmd[1]=="query_order"){
@@ -214,7 +211,7 @@ int main(){
                     input[2]=cmd[i+1];
                 }
             }
-            cout<<ticketsys.Refund_ticket(input[1],input[2])<<"\n";
+            cout<<ticketsys.Refund_ticket(input[1],stoi(input[2]))<<"\n";
         }else if(cmd[1]=="clean"){
             std::remove((path+"accfile").c_str());
             std::remove((path+"accindex").c_str());
