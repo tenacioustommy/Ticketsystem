@@ -28,13 +28,13 @@ private:
     struct Train
     {
         ID trainid;
-        int stationnum;
+        short stationnum;
         Station_t stations[100];
         int seatnum;
         int price[99];
         Time_t starttime;
-        int traveltime[99];
-        int stoptime[98];
+        short traveltime[99];
+        short stoptime[98];
         //0 start, 1 end,no longer than 72h
         Date_t saledate[2];
         char type;

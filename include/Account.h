@@ -16,7 +16,7 @@ private:
         Name_t name; 
         Mail_t mail;
         //0~10
-        int pvil;
+        short pvil;
         User()=default;
         User(const Username_t& tmpusername,const Pass_t& tmppwd,
             const Name_t& tmpname,const Mail_t& tmpmail,const int& tmppvil):
