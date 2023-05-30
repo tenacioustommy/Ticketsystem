@@ -197,7 +197,6 @@ private:
         Pos_t pos=orderfile.tellp();
         if(order.status=="[pending]"){
             queue.insert(order.trainid,pos);
-            // queue.push_back(pair<ID,Pos_t>(order.trainid,pos));
         }
         orderindex.insert(username,pos);
         orderfile.write(CAST(&order),sizeof(order),0,ios::end);
