@@ -1,7 +1,7 @@
 #ifndef BPT_H
 #define BPT_H
 #include"Header.h"
-#define M 80
+#define M 60
 #define CAST(N) reinterpret_cast<char*>(N)
 using std::cin,std::cout,std::endl,std::ios;
 namespace fs=std::filesystem;
