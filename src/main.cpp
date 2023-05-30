@@ -1,23 +1,24 @@
-#include<sstream>
 #include"BPT.hpp"
 #include"Ticketsys.h"
 int main(){
     // std::freopen("data/basic_2/1.in", "r", stdin);
     // std::freopen("1.out","w",stdout);
     ios::sync_with_stdio(false);
-    std::stringstream ss;
     std::string cmd[30];
     std::string buf,line;
     std::string input[15];
     
     while(std::getline(cin,line)){
         int cmd_cnt=0;
-        ss.clear();
-        ss<<line;
         buf.clear();
-        int i=0;
-        while(ss>>buf){
-            cmd[cmd_cnt++]=buf;
+        int start=0,end=0;
+        while(end<line.size()){
+            while(line[end]!=' '&&line[end]!='\n'){
+                end++;
+            }
+            cmd[cmd_cnt++]=line.substr(start,end-start);
+            end++;
+            start=end;
         }
         //used for debug
         cout<<cmd[0]<<" ";
