@@ -3,7 +3,7 @@
 int main(){
     // std::freopen("data/advance_2/1.in", "r", stdin);
     // std::freopen("1.out","w",stdout);
-    ios::sync_with_stdio(false);
+    // ios::sync_with_stdio(false);
     std::string cmd[30];
     std::string buf,line;
     std::string input[15];

@@ -570,8 +570,8 @@ public:
         }
     }
     BPT(std::string filena){
-        system(("mkdir -p "+path).c_str());
-        // std::filesystem::create_directory(path);
+        // system(("mkdir -p "+path).c_str());
+        std::filesystem::create_directory(path);
         filename=filena;
         file.open(filename,ios::binary|ios::in|ios::out);
         if(!file){
