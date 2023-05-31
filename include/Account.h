@@ -31,7 +31,6 @@ private:
     //put username and privilege
     map<Username_t,int> logged;
     int num;
-private:
     //write userinfo into accfile and accindex
     void writenewuser(User& user){
         accfile.seekp(0,ios::end);
@@ -39,8 +38,9 @@ private:
         accfile.write(CAST(&user),sizeofuser,0,ios::end);
         num++;
     }
+public:
     int Modify(const Username_t& curusername,const Username_t& tmpusername,const Pass_t& tmppwd,
-            const Name_t& tmpname,const Mail_t& tmpmail,const int tmppvil=-1){
+            const Name_t& tmpname,const Mail_t& tmpmail,const int tmppvil){
         auto it=logged.find(curusername);
         Pos_t pos;
         if(it!=logged.end()&&accindex.find(tmpusername,pos)){
@@ -139,40 +139,12 @@ private:
             }
         }
     }
-public:
     bool islogged(const Username_t& username){
         if(logged.find(username)!=logged.end()){
             return 1;
         }else return 0;
     }
-    int Modify(const std::string& curusername,const std::string& tmpusername,const Pass_t& tmppwd,
-            const std::string& tmpname,const std::string& tmpmail,const std::string& tmppvil){
-        if(tmppvil.empty()){
-            return Modify(Username_t(curusername),Username_t(tmpusername),Pass_t(tmppwd),
-            Name_t(tmpname),Mail_t(tmpmail));
-        }else{
-            return Modify(Username_t(curusername),Username_t(tmpusername),Pass_t(tmppwd),
-            Name_t(tmpname),Mail_t(tmpmail),std::stoi(tmppvil));
-        }
-    }
-    int Query(const std::string& curusername,const std::string& tmpusername){
-        return Query(Username_t(curusername),Username_t(tmpusername));
-    }
-    
-    int Logout(const std::string& tmpusername){
-        return Logout(Username_t(tmpusername));
-    }
-    
-    int Login(const std::string& tmpusername,const Pass_t& tmppwd){
-        return Login(Username_t(tmpusername),Pass_t(tmppwd));
-    }
-    
-    int Adduser(const std::string& curusername,const std::string& tmpusername,const Pass_t& tmppwd,
-            const std::string& tmpname,const std::string& tmpmail,const std::string& tmppvil){
-        return Adduser(Username_t(curusername),Username_t(tmpusername),Pass_t(tmppwd),
-            Name_t(tmpname),Mail_t(tmpmail),std::stoi(tmppvil));
-    }
-    Account():accindex("output/accindex"){
+    Account():accindex(path+"accindex"){
         if(accfile.init(path+"accfile")){
             num=0;
             accfile.write(CAST(&num),sizeof(int),0);

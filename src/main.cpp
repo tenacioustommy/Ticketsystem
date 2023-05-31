@@ -1,7 +1,7 @@
 #include"BPT.hpp"
 #include"Ticketsys.h"
 int main(){
-    // std::freopen("data/advance_2/1.in", "r", stdin);
+    // std::freopen("data/advance_2/2.in", "r", stdin);
     // std::freopen("1.out","w",stdout);
     ios::sync_with_stdio(false);
     cin.tie(0);
@@ -39,7 +39,7 @@ int main(){
                     input[6]=cmd[i+1];
                 }
             }
-            cout<<account.Adduser(input[1],input[2],input[3],input[4],input[5],input[6])<<"\n";
+            cout<<account.Adduser(input[1],input[2],input[3],input[4],input[5],stoi(input[6]))<<"\n";
             
         }else if(cmd[1]=="login"){
             for(int i=2;i<cmd_cnt;i+=2){
@@ -69,9 +69,10 @@ int main(){
                 cout<<-1<<"\n";
             }
         }else if(cmd[1]=="modify_profile"){
-            for(int i=1;i<7;i++){
+            for(int i=1;i<6;i++){
                 input[i].clear();
             }
+            input[6]="-1";
             for(int i=2;i<cmd_cnt;i+=2){
                 if(cmd[i]=="-c"){
                     input[1]=cmd[i+1];
@@ -87,7 +88,7 @@ int main(){
                     input[6]=cmd[i+1];
                 }
             }
-            if(account.Modify(input[1],input[2],input[3],input[4],input[5],input[6])==-1){
+            if(account.Modify(input[1],input[2],input[3],input[4],input[5],stoi(input[6]))==-1){
                  cout<<-1<<"\n";
             }
         }else if(cmd[1]=="add_train"){
