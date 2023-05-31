@@ -20,6 +20,7 @@ using Station_t=string<30>;
 using Time_t=string<5>;
 using Date_t=string<5>;
 using Status_t=string<10>;
-using std::stoi,std::cin,std::cout,std::endl,sjtu::vector,sjtu::pair,sjtu::map;
+using std::stoi,std::cin,std::cout,std::endl,std::ios,sjtu::vector,sjtu::pair,sjtu::map;
+namespace fs=std::filesystem;
 std::string path="output/";
 #endif

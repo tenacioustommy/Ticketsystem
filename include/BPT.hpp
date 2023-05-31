@@ -1,10 +1,7 @@
 #ifndef BPT_H
 #define BPT_H
 #include"Header.h"
-#define M 160
-#define CAST(N) reinterpret_cast<char*>(N)
-using std::cin,std::cout,std::endl,std::ios;
-namespace fs=std::filesystem;
+#define M 96
 const int MAXSIZE=M,MINSIZE=M/2;
 enum NODE{ROOTLEAF,LEAF,ROOT,BRANCH};
 
