@@ -2,9 +2,7 @@
 #define SJTU_VECTOR_HPP
 
 #include "exceptions.hpp"
-#include <climits>
-#include <cstddef>
-
+#include"utility.hpp"
 namespace sjtu 
 {
 /**
@@ -605,7 +603,24 @@ public:
 		}
 	}
 };
+template<typename T,typename Comp>
+void sort(vector<T>& vec,Comp comp){
+	int n = vec.size();
+    for (int i = 0; i < n - 1; ++i) {
+        bool swapped = false;
+        for (int j = 0; j < n - i - 1; ++j) {
+            if (!comp(vec[j],vec[j + 1])) {
+                swap(vec[j], vec[j + 1]);
+                swapped = true;
+            }
+        }
 
+        // 如果某一轮已经没有交换操作，说明后面的元素已经有序，提前终止
+        if (!swapped) {
+            break;
+        }
+    }
+}
 
 }
 

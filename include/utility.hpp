@@ -1,8 +1,5 @@
 #ifndef SJTU_UTILITY_HPP
 #define SJTU_UTILITY_HPP
-
-#include <utility>
-
 namespace sjtu {
 
 template<class T1, class T2>
@@ -38,12 +35,7 @@ void reverse(ITER begin,ITER end){
 		}
         end--;
     }
-}    
-// template<class ITER,class T>
-// void sort(ITER begin,ITER end,bool(*comp)(const T&,const T&)){
-
-// }
 }
-
-
+  
+}
 #endif

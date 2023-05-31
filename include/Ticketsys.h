@@ -3,7 +3,6 @@
 #include"Account.h"
 #include"File.h"
 #include"util.h"
-#include<set>
 
 class Ticketsys
 {   
@@ -218,6 +217,7 @@ private:
         Station_t depart;
         Station_t arrival;
     };
+
     class Compbytime
     {
     public:
@@ -513,8 +513,7 @@ public:
     }
     void Query_ticket(const Station_t& departstation,const Station_t& arrivalstation,const Date_t& date,const std::string& opt){
         sjtu::vector<Pos_t> vec1,vec2,vec;
-        std::set<Ticket,Compbytime> tickettimeset;
-        std::set<Ticket,Compbycost> ticketcostset;
+        vector<Ticket> ticketvec;
         stationindex.findall(departstation,vec1);
         stationindex.findall(arrivalstation,vec2);
         find_sameele(vec1,vec2,vec);
@@ -532,23 +531,17 @@ public:
             if(!achieveticket(ticket,train,start,end,date)){
                 continue;
             }
-            if(opt=="time"){
-                tickettimeset.insert(ticket);
-            }else if(opt=="cost"){
-                ticketcostset.insert(ticket);
-            }
+            ticketvec.push_back(ticket);
         }
         if(opt=="time"){
-            cout<<tickettimeset.size()<<"\n";
-            for(auto it=tickettimeset.begin();it!=tickettimeset.end();it++){
-                cout<<it->trainid<<" "<<departstation<<" "<<it->departdt<<" -> "<<arrivalstation<<" "<<it->arrivaldt<<" "<<it->price<<" "<<it->seatnum<<"\n";
-            }
+            sjtu::sort(ticketvec,Compbytime());
         }else if(opt=="cost"){
-            cout<<ticketcostset.size()<<"\n";
-            for(auto it=ticketcostset.begin();it!=ticketcostset.end();it++){
+            sjtu::sort(ticketvec,Compbycost());
+        }
+        cout<<ticketvec.size()<<"\n";
+        for(auto it=ticketvec.begin();it!=ticketvec.end();it++){
                 cout<<it->trainid<<" "<<departstation<<" "<<it->departdt<<" -> "<<arrivalstation<<" "<<it->arrivaldt<<" "<<it->price<<" "<<it->seatnum<<"\n";
             }
-        }
     }
    
     void Query_transfer(const Station_t& departstation,const Station_t& arrivalstation,const Date_t& date,const std::string& opt){
