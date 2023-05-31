@@ -7,11 +7,12 @@ struct string {
     char buf[SIZE+1];
     string(){buf[0]='\0';}
     string(const char* str){
-        strncpy(buf,str,SIZE);
+        memcpy(buf,str,SIZE);
         buf[SIZE]='\0';
     }
     string(const std::string str){
-        strcpy(buf,str.c_str());
+        memcpy(buf,str.c_str(),SIZE);
+        buf[SIZE]='\0';
     }
     bool isempty()const{
         if(buf[0]=='\0'){
