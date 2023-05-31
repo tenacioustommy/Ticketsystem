@@ -3,7 +3,7 @@
 #include"Account.h"
 #include"File.h"
 #include"util.h"
-
+#include<set>
 class Ticketsys
 {   
 private:
@@ -513,7 +513,6 @@ public:
     }
     void Query_ticket(const Station_t& departstation,const Station_t& arrivalstation,const Date_t& date,const std::string& opt){
         sjtu::vector<Pos_t> vec1,vec2,vec;
-        vector<Ticket> ticketvec;
         stationindex.findall(departstation,vec1);
         stationindex.findall(arrivalstation,vec2);
         find_sameele(vec1,vec2,vec);
@@ -524,24 +523,39 @@ public:
         int start,end;
         Train train;
         Ticket ticket;
-        for(auto it=vec.begin();it!=vec.end();it++){
-            trainfile.read(CAST(&train),sizeoftrain,*it);
-            find_stationindex(train,departstation,start);
-            find_stationindex(train,arrivalstation,end);
-            if(!achieveticket(ticket,train,start,end,date)){
-                continue;
-            }
-            ticketvec.push_back(ticket);
-        }
         if(opt=="time"){
-            sjtu::sort(ticketvec,Compbytime());
-        }else if(opt=="cost"){
-            sjtu::sort(ticketvec,Compbycost());
-        }
-        cout<<ticketvec.size()<<"\n";
-        for(auto it=ticketvec.begin();it!=ticketvec.end();it++){
+            std::set<Ticket,Compbytime> ticketset;
+            for(auto it=vec.begin();it!=vec.end();it++){
+                trainfile.read(CAST(&train),sizeoftrain,*it);
+                find_stationindex(train,departstation,start);
+                find_stationindex(train,arrivalstation,end);
+                if(!achieveticket(ticket,train,start,end,date)){
+                    continue;
+                }
+                ticketset.insert(ticket); 
+            }
+            cout<<ticketset.size()<<"\n";
+            for(auto it=ticketset.begin();it!=ticketset.end();it++){
                 cout<<it->trainid<<" "<<departstation<<" "<<it->departdt<<" -> "<<arrivalstation<<" "<<it->arrivaldt<<" "<<it->price<<" "<<it->seatnum<<"\n";
             }
+        }else if(opt=="cost"){
+            std::set<Ticket,Compbycost> ticketset;
+            for(auto it=vec.begin();it!=vec.end();it++){
+                trainfile.read(CAST(&train),sizeoftrain,*it);
+                find_stationindex(train,departstation,start);
+                find_stationindex(train,arrivalstation,end);
+                if(!achieveticket(ticket,train,start,end,date)){
+                    continue;
+                }
+                ticketset.insert(ticket); 
+            }
+            cout<<ticketset.size()<<"\n";
+            for(auto it=ticketset.begin();it!=ticketset.end();it++){
+                cout<<it->trainid<<" "<<departstation<<" "<<it->departdt<<" -> "<<arrivalstation<<" "<<it->arrivaldt<<" "<<it->price<<" "<<it->seatnum<<"\n";
+            }
+        }else{
+            throw std::invalid_argument("invalid opt");
+        }
     }
    
     void Query_transfer(const Station_t& departstation,const Station_t& arrivalstation,const Date_t& date,const std::string& opt){
@@ -636,12 +650,12 @@ public:
             return -1;
         }
         sjtu::vector<Pos_t> posvec;
+        Order order;
         if(readorder(username,posvec)!=-1){
             cout<<posvec.size()<<"\n";
-            Order order;
             for(auto it=posvec.begin();it!=posvec.end();it++){
                 orderfile.read(CAST(&order),sizeof(order),*it);
-                 cout<<order.status<<" "<<order.trainid<<" "<<order.departure<<" "<<order.departdate<<" "<<order.departtime<<" -> "<<
+                cout<<order.status<<" "<<order.trainid<<" "<<order.departure<<" "<<order.departdate<<" "<<order.departtime<<" -> "<<
                 order.arrival<<" "<<order.arrivaldate<<" "<<order.arrivaltime<<" "<<order.price<<" "<<order.num<<"\n";
             }
         }else{
