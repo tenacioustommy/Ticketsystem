@@ -1,8 +1,8 @@
 #include"BPT.hpp"
 #include"Ticketsys.h"
 int main(){
-    std::freopen("data/advance_2/1.in", "r", stdin);
-    std::freopen("1.out","w",stdout);
+    // std::freopen("data/advance_2/1.in", "r", stdin);
+    // std::freopen("1.out","w",stdout);
     ios::sync_with_stdio(false);
     cin.tie(0);
     std::string cmd[30];
