@@ -1,7 +1,7 @@
 #ifndef BPT_H
 #define BPT_H
 #include"Header.h"
-#define M 40
+#define M 140
 const int MAXSIZE=M,MINSIZE=M/2;
 enum NODE{ROOTLEAF,LEAF,ROOT,BRANCH};
 

@@ -594,24 +594,26 @@ public:
                             if(arridate<cur){
                                 //i need consider onsale or not in coming days
                                 if(!achieveticket(tmpticket2,*it2,j,end,cur)){
-                                    if(!achieveticket(tmpticket2,*it2,j,end,cur+1)){
-                                        if(!achieveticket(tmpticket2,*it2,j,end,cur+2)){
-                                            if(!achieveticket(tmpticket2,*it2,j,end,cur+3)){
-                                                continue;
-                                            }
-                                        } 
-                                    }
+                                    // if(!achieveticket(tmpticket2,*it2,j,end,cur+1)){
+                                    //     if(!achieveticket(tmpticket2,*it2,j,end,cur+2)){
+                                    //         if(!achieveticket(tmpticket2,*it2,j,end,cur+3)){
+                                    //             continue;
+                                    //         }
+                                    //     } 
+                                    // }
+                                    continue;
                                 }
                             }else{
                                 //i need consider onsale or not in coming days
                                 if(!achieveticket(tmpticket2,*it2,j,end,arridate)){
-                                    if(!achieveticket(tmpticket2,*it2,j,end,arridate+1)){
-                                        if(!achieveticket(tmpticket2,*it2,j,end,arridate+2)){
-                                            if(!achieveticket(tmpticket2,*it2,j,end,arridate+3)){
-                                                continue;
-                                            }
-                                        } 
-                                    }
+                                    // if(!achieveticket(tmpticket2,*it2,j,end,arridate+1)){
+                                    //     if(!achieveticket(tmpticket2,*it2,j,end,arridate+2)){
+                                    //         if(!achieveticket(tmpticket2,*it2,j,end,arridate+3)){
+                                    //             continue;
+                                    //         }
+                                    //     } 
+                                    // }
+                                    continue;
                                 }
                             }
                             //time may not be proper

@@ -603,28 +603,6 @@ public:
 		}
 	}
 };
-// template<typename T,typename Comp>
-// void quickSort(vector<T>& arr, int low, int high,Comp comp) {
-//     if (low < high) {
-//         T pivot = arr[high];
-//         int i = low - 1;
-//         for (int j = low; j <= high - 1; j++) {
-//             if (comp(arr[j],pivot)) {
-//                 i++;
-//                 swap(arr[i], arr[j]);
-//             }
-//         }
-//         swap(arr[i + 1], arr[high]);
-//         int pi = i + 1;
-//         quickSort(arr, low, pi - 1,comp);
-//         quickSort(arr, pi + 1, high,comp);
-//     }
-// }
-// template<typename T,typename Comp>
-// void sort(vector<T>& vec,Comp comp){
-// 	quickSort(vec,0,vec.size()-1,comp);
-// }
-
 }
 
 #endif
