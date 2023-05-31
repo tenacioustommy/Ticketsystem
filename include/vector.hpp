@@ -604,22 +604,25 @@ public:
 	}
 };
 template<typename T,typename Comp>
-void sort(vector<T>& vec,Comp comp){
-	int n = vec.size();
-    for (int i = 0; i < n - 1; ++i) {
-        bool swapped = false;
-        for (int j = 0; j < n - i - 1; ++j) {
-            if (!comp(vec[j],vec[j + 1])) {
-                swap(vec[j], vec[j + 1]);
-                swapped = true;
+void quickSort(vector<T>& arr, int low, int high,Comp comp) {
+    if (low < high) {
+        T pivot = arr[high];
+        int i = low - 1;
+        for (int j = low; j <= high - 1; j++) {
+            if (comp(arr[j],pivot)) {
+                i++;
+                swap(arr[i], arr[j]);
             }
         }
-
-        // 如果某一轮已经没有交换操作，说明后面的元素已经有序，提前终止
-        if (!swapped) {
-            break;
-        }
+        swap(arr[i + 1], arr[high]);
+        int pi = i + 1;
+        quickSort(arr, low, pi - 1,comp);
+        quickSort(arr, pi + 1, high,comp);
     }
+}
+template<typename T,typename Comp>
+void sort(vector<T>& vec,Comp comp){
+	quickSort(vec,0,vec.size()-1,comp);
 }
 
 }
