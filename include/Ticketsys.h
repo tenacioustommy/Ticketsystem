@@ -3,7 +3,6 @@
 #include"Account.h"
 #include"File.h"
 #include"util.h"
-#include<algorithm>
 #include<set>
 
 class Ticketsys
@@ -78,35 +77,34 @@ private:
             throw std::invalid_argument("invalid");
         }
     }
+    void releasestation(const Train& train,const Pos_t& pos){
+        for(int i=0;i<train.stationnum;i++){
+            stationindex.insert(train.stations[i],pos);
+        }
+    }
     void writenewtrain(Train& train){
         trainfile.seekp(0,ios::end);
         Pos_t pos=trainfile.tellp();
         traindex.insert(train.trainid,pos);
-        for(int i=0;i<train.stationnum;i++){
-            stationindex.insert(train.stations[i],pos);
-        }
+        
         trainfile.write(CAST(&train),sizeoftrain,pos);
     }
     int removetrain(const ID& id){
         Pos_t pos;
         if(traindex.removeunique(id,pos)){
-            Train train;
-            trainfile.read(CAST(&train),sizeoftrain,pos);
-            for(int i=0;i<train.stationnum;i++){
-                stationindex.remove(train.stations[i],pos);
-            }
             return 0;
         }else{
             return -1;
         }
     }
+    //success return pos,else return -1
     int readtrain(Train& train,const ID& trainid){
         Pos_t pos;
         if(!traindex.find(trainid,pos)){
             return -1;
         }
         trainfile.read(CAST(&train),sizeoftrain,pos);
-        return 0;
+        return pos;
     }
     int find_stationindex(const Train& train,const Station_t& station,int& idx){
         for(int i=0;i<train.stationnum;i++){
@@ -202,16 +200,15 @@ private:
         orderfile.write(CAST(&order),sizeof(order),0,ios::end);
     }
     //read order by username and sort from new to old
-    int readorder(const Username_t& username,std::vector<Pos_t>& posvec){
+    int readorder(const Username_t& username,sjtu::vector<Pos_t>& posvec){
         //posvec new to old
         if(orderindex.findall(username,posvec)){
-            std::reverse(posvec.begin(),posvec.end());
+            sjtu::reverse(posvec.begin(),posvec.end());
             return 0;
         }else{
             return -1;
         }
     }
-    
     struct Ticket
     {
         ID trainid;
@@ -332,12 +329,15 @@ public:
    
     int Release_train(const ID& tmptrainid){
         Train train;
-        if(readtrain(train,tmptrainid)!=-1){
+        Pos_t pos;
+        if((pos=readtrain(train,tmptrainid))!=-1){
             //release twice is not allowed
             Pos_t tmp;
             if(seatindex.find(tmptrainid,tmp)){
                return -1;
             }
+            //release station
+            releasestation(train,pos);
             Seats seat;
             for(int i=to_relative_day(train.saledate[0]);i<=to_relative_day(train.saledate[1]);i++){
                 for(int j=0;j<train.stationnum;j++){
@@ -514,7 +514,7 @@ public:
     }
     void Query_ticket(const Station_t& departstation,const Station_t& arrivalstation,const Date_t& date,const std::string& opt){
 
-        std::vector<Pos_t> vec1,vec2,vec;
+        sjtu::vector<Pos_t> vec1,vec2,vec;
         std::set<Ticket,Compbytime> tickettimeset;
         std::set<Ticket,Compbycost> ticketcostset;
         stationindex.findall(departstation,vec1);
@@ -644,7 +644,7 @@ public:
         if(!account.islogged(username)){
             return -1;
         }
-        std::vector<Pos_t> posvec;
+        sjtu::vector<Pos_t> posvec;
         if(readorder(username,posvec)!=-1){
             cout<<posvec.size()<<"\n";
             Order order;
@@ -663,7 +663,7 @@ public:
             return -1;
         }
         //to do,optimize memory
-        std::vector<Pos_t> posvec;
+        sjtu::vector<Pos_t> posvec;
         if(readorder(username,posvec)!=-1){
             //nth order don't exist
             if(n>posvec.size()){

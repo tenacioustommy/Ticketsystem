@@ -537,7 +537,7 @@ public:
             }
         }
     }
-    bool findall(const Key& key,std::vector<Value>& vec){
+    bool findall(const Key& key,sjtu::vector<Value>& vec){
         Block blk;
         int pos=rootpos;
         int index;

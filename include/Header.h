@@ -4,7 +4,8 @@
 #include<filesystem>
 #include<iostream>
 #include<fstream>
-#include<vector>
+#include"utility.hpp"
+#include"vector.hpp"
 #define CAST(N) reinterpret_cast<char*>(N)
 using Username_t=string<20>;
 using Pass_t=string<30>; 
@@ -17,6 +18,6 @@ using Station_t=string<30>;
 using Time_t=string<5>;
 using Date_t=string<5>;
 using Status_t=string<10>;
-using std::stoi,std::cin,std::cout,std::endl,std::vector,std::pair;
+using std::stoi,std::cin,std::cout,std::endl,sjtu::vector,sjtu::pair;
 std::string path="output/";
 #endif

@@ -49,7 +49,7 @@ int to_relative_day(const Date_t& date){
 }
 
 template<class T>
-void find_sameele(const std::vector<T>& vec1,const std::vector<T>& vec2,std::vector<T>& vec){
+void find_sameele(sjtu::vector<T>& vec1,sjtu::vector<T>& vec2,sjtu::vector<T>& vec){
     auto it1=vec1.begin(),it2=vec2.begin();
     while(it1!=vec1.end()&&it2!=vec2.end()){
         if(*it1<*it2){
