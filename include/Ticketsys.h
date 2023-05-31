@@ -691,8 +691,8 @@ public:
                 vector<Pos_t> queuevec;
                 queue.findall(order.trainid,queuevec);
                 auto it=queuevec.begin();
+                Order pending;
                 while(it!=queuevec.end()){
-                    Order pending;
                     orderfile.read(CAST(&pending),sizeof(pending),*it);
                     if(buy_seat(seat,to_relative_day(pending.startdate),pending.num,pending.departindex,pending.arrivalindex)!=-1){
                         //success then change status,write and delete queue
