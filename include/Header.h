@@ -5,7 +5,9 @@
 #include<iostream>
 #include<fstream>
 #include"utility.hpp"
+#include"BPT.hpp"
 #include"vector.hpp"
+#include"map.hpp"
 #define CAST(N) reinterpret_cast<char*>(N)
 using Username_t=string<20>;
 using Pass_t=string<30>; 
@@ -18,6 +20,6 @@ using Station_t=string<30>;
 using Time_t=string<5>;
 using Date_t=string<5>;
 using Status_t=string<10>;
-using std::stoi,std::cin,std::cout,std::endl,sjtu::vector,sjtu::pair;
+using std::stoi,std::cin,std::cout,std::endl,sjtu::vector,sjtu::pair,sjtu::map;
 std::string path="output/";
 #endif

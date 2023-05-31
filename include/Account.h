@@ -1,6 +1,5 @@
 #ifndef ACCOUNT_H
 #define ACCOUNT_H
-#include<map>
 #include"BPT.hpp"
 #include"Header.h"
 #include"File.h"
@@ -30,7 +29,7 @@ private:
     BPT<Username_t,Pos_t> accindex;
     File accfile;
     //put username and privilege
-    std::map<Username_t,int> logged;
+    map<Username_t,int> logged;
     int num;
 private:
     //write userinfo into accfile and accindex
