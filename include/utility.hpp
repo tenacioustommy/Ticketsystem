@@ -38,8 +38,11 @@ void reverse(ITER begin,ITER end){
 		}
         end--;
     }
-    
-}
+}    
+// template<class ITER,class T>
+// void sort(ITER begin,ITER end,bool(*comp)(const T&,const T&)){
+
+// }
 }
 
 

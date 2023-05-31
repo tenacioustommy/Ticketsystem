@@ -86,7 +86,6 @@ private:
         trainfile.seekp(0,ios::end);
         Pos_t pos=trainfile.tellp();
         traindex.insert(train.trainid,pos);
-        
         trainfile.write(CAST(&train),sizeoftrain,pos);
     }
     int removetrain(const ID& id){
@@ -513,7 +512,6 @@ public:
         return 0;
     }
     void Query_ticket(const Station_t& departstation,const Station_t& arrivalstation,const Date_t& date,const std::string& opt){
-
         sjtu::vector<Pos_t> vec1,vec2,vec;
         std::set<Ticket,Compbytime> tickettimeset;
         std::set<Ticket,Compbycost> ticketcostset;

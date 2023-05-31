@@ -309,10 +309,13 @@ private:
 	T* last; 
 	size_t m_size;
 	size_t capacity;
-	void doublecap()
+	void expandcap()
 	{
-		
-		capacity*=2;
+		if(capacity<512){
+			capacity*=2;
+		}else{
+			capacity*=1.5;
+		}
 		T*p=first;
 		first = static_cast<T*>(operator new[](sizeof(T) * capacity)); 
 		last=first+m_size;
@@ -331,7 +334,7 @@ private:
 public:
 	vector() {
 		m_size=0;
-		capacity=10;
+		capacity=16;
 		
 		first = static_cast<T*>(operator new[](sizeof(T) * capacity)); 
 
@@ -510,7 +513,7 @@ public:
 		
 		if(m_size==capacity)
 		{
-			doublecap();
+			expandcap();
 		}
 		if(loc==m_size)
 		{
@@ -581,7 +584,7 @@ public:
 	void push_back(const T &value) {
 		if(m_size==capacity)
 		{
-			doublecap();
+			expandcap();
 		}
 		m_size++;
 		last++;
